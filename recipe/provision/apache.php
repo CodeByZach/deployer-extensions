@@ -2,12 +2,9 @@
 namespace Deployer;
 
 
-// Abort a deployment.
-desc('Abort a deployment.');
-task('deploy:abort', function () {
-	writeln('<error>Deployment aborted.</error>');
-	exit(1);
-});
+// Set default log locations.
+set('apache_error_log_files', '/var/log/apache2/logs/error.log');
+set('apache_access_log_files', '/var/log/apache2/logs/access.log');
 
 
 // Tail the apache php error logs.

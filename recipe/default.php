@@ -1,6 +1,7 @@
 <?php
 namespace Deployer;
 
+require(__DIR__.'/provision/apache.php');
 require(__DIR__.'/deploy/release_commit.php');
 require(__DIR__.'/deploy/environment.php');
 require(__DIR__.'/deploy/utils.php');

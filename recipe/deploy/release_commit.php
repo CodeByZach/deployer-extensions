@@ -80,7 +80,13 @@ task('releases:list', function () {
 		if ($release === $currentRelease) {
 			$status .= ' (current)';
 		}
-		$revision = isset($releaseCommitsLog[$release]) ? $releaseCommitsLog[$release]['commit'] : 'unknown';
+		$revision = 'unknown'; // Initialize to 'unknown' by default
+		foreach ($releaseCommitsLog as $commitInfo) {
+			if (isset($commitInfo['release_name']) && $commitInfo['release_name'] === $release) {
+				$revision = $commitInfo['commit'];
+				break; // Stop searching once a matching release is found
+			}
+		}
 		$table[] = [
 			$date->format("Y-m-d H:i:s"),
 			$status,
