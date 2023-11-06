@@ -8,25 +8,3 @@ task('deploy:abort', function () {
 	writeln('<error>Deployment aborted.</error>');
 	exit(1);
 });
-
-
-// Tail the apache php error logs.
-desc('Tail the apache php error logs.');
-task('logs:apache_error', function () {
-	if (!has('apache_error_log_files')) {
-		warning("Please, specify \"apache_error_log_files\" option.");
-		return;
-	}
-	run('tail -f {{apache_error_log_files}}');
-})->verbose();
-
-
-// Tail the apache php access logs.
-desc('Tail the apache php access logs.');
-task('logs:apache_access', function () {
-	if (!has('apache_access_log_files')) {
-		warning("Please, specify \"apache_access_log_files\" option.");
-		return;
-	}
-	run('tail -f {{apache_access_log_files}}');
-})->verbose();
