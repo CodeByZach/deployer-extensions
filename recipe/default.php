@@ -19,7 +19,7 @@ set('symlink_published', false);
  * Tasks
  */
 // Define a custom task to log the deployment
-desc('Pre-flight check prior to initiating deployment.');
+desc('Pre-flight check prior to initiating deployment');
 task('deploy:precheck', function () {
 	$env_status = get('env_status');
 	$env_status_uppercase = strtoupper($env_status);
