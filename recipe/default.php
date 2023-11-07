@@ -21,8 +21,8 @@ set('symlink_published', false);
 // Define a custom task to log the deployment
 desc('Pre-flight check prior to initiating deployment');
 task('deploy:precheck', function () {
-	$env_status = get('env_status');
-	$env_status_uppercase = strtoupper($env_status);
+	$env_status            = get('env_status');
+	$env_status_uppercase  = strtoupper($env_status);
 	$low_risk_env_statuses = [
 		'development'
 	];
@@ -46,14 +46,14 @@ desc('Clean up a failed release if the deployment failed before or during symlin
 task('deploy:cleanup_failed_release', function () {
 	// Check if the symlink step was completed successfully
 	if (!get('symlink_published')) {
-		$release_name = get('release_name');
+		$release_name        = get('release_name');
 		$failed_release_path = '{{deploy_path}}/releases/'.$release_name;
 
 		// Remove the failed release directory
 		run("rm -rf $failed_release_path");
 
 		// Define temporary paths for the log files
-		$releases_log_path = '{{deploy_path}}/.dep/releases_log';
+		$releases_log_path        = '{{deploy_path}}/.dep/releases_log';
 		$release_commits_log_path = '{{deploy_path}}/.dep/release_commits_log';
 
 		// Remove records of the failed release from the log file copies

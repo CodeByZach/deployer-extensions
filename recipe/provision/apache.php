@@ -11,7 +11,7 @@ set('apache_access_log_files', '/var/log/apache2/logs/access.log');
 desc('Shows apache php error logs');
 task('logs:apache_error', function () {
 	if (!has('apache_error_log_files')) {
-		warning("Please, specify \"apache_error_log_files\" option.");
+		warning('Please, specify "apache_error_log_files" option.');
 		return;
 	}
 	run('tail -f {{apache_error_log_files}}');
@@ -22,7 +22,7 @@ task('logs:apache_error', function () {
 desc('Shows apache php access logs');
 task('logs:apache_access', function () {
 	if (!has('apache_access_log_files')) {
-		warning("Please, specify \"apache_access_log_files\" option.");
+		warning('Please, specify "apache_access_log_files" option.');
 		return;
 	}
 	run('tail -f {{apache_access_log_files}}');

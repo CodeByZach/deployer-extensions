@@ -12,25 +12,25 @@ set('release_commits_log', function () {
 		return [];
 	}
 
-	$releaseCommitsLogs = array_map(function ($line) {
+	$release_commits_logs = array_map(function ($line) {
 		return json_decode($line, true);
 	}, explode("\n", run('tail -n 300 .dep/release_commits_log')));
 
-	return array_filter($releaseCommitsLogs); // Return all non-empty lines.
+	return array_filter($release_commits_logs); // Return all non-empty lines.
 });
 
 
-// Clean up unfinished releases and prepare next release
+// Clean up unfinished releases and prepare next release.
 desc('Store commit hash with release_name for the current release');
 task('deploy:release_commit', function () {
-	$git = get('bin/git');
+	$git    = get('bin/git');
 	$target = get('target');
-	$rev = run("cd {{deploy_path}}/.dep/repo && ($git rev-list $target -1)");
+	$rev    = run("cd {{deploy_path}}/.dep/repo && ($git rev-list $target -1)");
 
 	// Metainfo.
 	$metainfo = [
 		'release_name' => get('release_name'),
-		'commit' => $rev
+		'commit'       => $rev
 	];
 
 	// Save metainfo about release.
@@ -56,19 +56,18 @@ desc('Shows releases list with commits from release_commits_log');
 task('releases:list', function () {
 	cd('{{deploy_path}}');
 
-	$releasesLog = get('releases_log');
-	$releaseCommitsLog = get('release_commits_log');
-	$currentRelease = basename(run('readlink {{current_path}}'));
-	$releasesList = get('releases_list');
+	$table               = [];
+	$releases_log        = get('releases_log');
+	$release_commits_log = get('release_commits_log');
+	$current_release     = basename(run('readlink {{current_path}}'));
+	$releases_list       = get('releases_list');
+	$tz                  = !empty(getenv('TIMEZONE')) ? getenv('TIMEZONE') : date_default_timezone_get();
 
-	$table = [];
-	$tz = !empty(getenv('TIMEZONE')) ? getenv('TIMEZONE') : date_default_timezone_get();
-
-	foreach ($releasesLog as &$metainfo) {
+	foreach ($releases_log as &$metainfo) {
 		$date = \DateTime::createFromFormat(\DateTimeInterface::ISO8601, $metainfo['created_at']);
 		$date->setTimezone(new \DateTimeZone($tz));
 		$status = $release = $metainfo['release_name'];
-		if (in_array($release, $releasesList, true)) {
+		if (in_array($release, $releases_list, true)) {
 			if (test("[ -f releases/$release/BAD_RELEASE ]")) {
 				$status = "<error>$release</error> (bad)";
 			} else if (test("[ -f releases/$release/DIRTY_RELEASE ]")) {
@@ -77,11 +76,11 @@ task('releases:list', function () {
 				$status = "<info>$release</info>";
 			}
 		}
-		if ($release === $currentRelease) {
+		if ($release === $current_release) {
 			$status .= ' (current)';
 		}
 		$revision = 'unknown'; // Initialize to 'unknown' by default
-		foreach ($releaseCommitsLog as $commitInfo) {
+		foreach ($release_commits_log as $commitInfo) {
 			if (isset($commitInfo['release_name']) && $commitInfo['release_name'] === $release) {
 				$revision = $commitInfo['commit'];
 				break; // Stop searching once a matching release is found
