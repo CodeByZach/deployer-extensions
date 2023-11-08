@@ -31,8 +31,8 @@ task('deploy:check_env_config', function () {
 
 
 // Deploy the configuration file.
-desc('Copy environment-specific configuration file to deployment');
-task('deploy:copy_env_config', function () {
+desc('Upload environment-specific configuration file to deployment');
+task('deploy:upload_env_config', function () {
 	$source_env_config = get('env_config');
 	$target_env_config = '{{release_or_current_path}}/env.php';
 	upload($source_env_config, $target_env_config);

@@ -96,7 +96,7 @@ task('deploy', [
 fail('deploy', 'deploy:failed');
 before('deploy:prepare', 'deploy:check_env_config');
 after('deploy:prepare', 'deploy:release_commit');
-before('deploy:symlink', 'deploy:copy_env_config');
+before('deploy:symlink', 'deploy:upload_env_config');
 after('deploy:symlink', function () {
 	set('symlink_published', true);
 });
