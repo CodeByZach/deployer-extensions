@@ -4,7 +4,7 @@ namespace Deployer;
 use Symfony\Component\Console\Helper\Table;
 
 
-// Holds releases log from `.dep/release_commits_log` file.
+// Get releases from the `.dep/release_commits_log` log file.
 set('release_commits_log', function () {
 	cd('{{deploy_path}}');
 
