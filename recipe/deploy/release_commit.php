@@ -8,7 +8,7 @@ use Symfony\Component\Console\Helper\Table;
 set('release_commits_log', function () {
 	cd('{{deploy_path}}');
 
-	if (!test('[ -f .dep/release_commits_log ]')) {
+	if (test('[ ! -f .dep/release_commits_log ]')) {
 		return [];
 	}
 
@@ -25,7 +25,7 @@ desc('Store commit hash with release_name for the current release');
 task('deploy:release_commit', function () {
 	$git    = get('bin/git');
 	$target = get('target');
-	$rev    = run("cd {{deploy_path}}/.dep/repo && ($git rev-list $target -1)");
+	$rev    = run("cd {{deploy_path}}/.dep/repo && ({$git} rev-list {$target} -1)");
 
 	// Metainfo.
 	$metainfo = [
@@ -35,7 +35,7 @@ task('deploy:release_commit', function () {
 
 	// Save metainfo about release.
 	$json = escapeshellarg(json_encode($metainfo));
-	run("echo $json >> {{deploy_path}}/.dep/release_commits_log");
+	run("echo {$json} >> {{deploy_path}}/.dep/release_commits_log");
 });
 
 
@@ -68,12 +68,12 @@ task('releases:list', function () {
 		$date->setTimezone(new \DateTimeZone($tz));
 		$status = $release = $metainfo['release_name'];
 		if (in_array($release, $releases_list, true)) {
-			if (test("[ -f releases/$release/BAD_RELEASE ]")) {
-				$status = "<error>$release</error> (bad)";
-			} else if (test("[ -f releases/$release/DIRTY_RELEASE ]")) {
-				$status = "<error>$release</error> (dirty)";
+			if (test("[ -f releases/{$release}/BAD_RELEASE ]")) {
+				$status = "<error>{$release}</error> (bad)";
+			} else if (test("[ -f releases/{$release}/DIRTY_RELEASE ]")) {
+				$status = "<error>{$release}</error> (dirty)";
 			} else {
-				$status = "<info>$release</info>";
+				$status = "<info>{$release}</info>";
 			}
 		}
 		if ($release === $current_release) {
@@ -87,7 +87,7 @@ task('releases:list', function () {
 			}
 		}
 		$table[] = [
-			$date->format("Y-m-d H:i:s"),
+			$date->format('Y-m-d H:i:s'),
 			$status,
 			$metainfo['user'],
 			$metainfo['target'],
@@ -97,7 +97,7 @@ task('releases:list', function () {
 
 	(new Table(output()))
 		->setHeaderTitle(currentHost()->getAlias())
-		->setHeaders(["Date ($tz)", 'Release', 'Author', 'Target', 'Commit'])
+		->setHeaders(["Date ({$tz})", 'Release', 'Author', 'Target', 'Commit'])
 		->setRows($table)
 		->render();
 });
