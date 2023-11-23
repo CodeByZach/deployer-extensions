@@ -64,9 +64,9 @@ task('deploy:cleanup_failed_release', function () {
 		run("mv {$releases_log_path}.tmp {$releases_log_path}");
 		run("mv {$release_commits_log_path}.tmp {$release_commits_log_path}");
 
-		writeln('<info>Failed release has been cleaned up successfully.</info>');
+		info('Failed release has been cleaned up successfully.');
 	} else {
-		writeln('<info>Deployment did not fail before or during "deploy:symlink". No cleanup required.</info>');
+		info('Deployment did not fail before or during "deploy:symlink". No cleanup required.');
 	}
 });
 
