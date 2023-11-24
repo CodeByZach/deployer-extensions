@@ -28,15 +28,10 @@ task('deploy:precheck', function () {
 		'development'
 	];
 
-	if (in_array($env_status, $low_risk_env_statuses) || askConfirmation("Are you sure you want to deploy to **{$env_status_uppercase}**?")) {
-		desc('Deploys your project');
-		task('deploy', [
-			'deploy:prepare',
-			'deploy:vendors',
-			'deploy:publish'
-		]);
-		fail('deploy', 'deploy:failed');
-		invoke('deploy');
+	if (!in_array($env_status, $low_risk_env_statuses)) {
+		if (!askConfirmation("Are you sure you want to deploy to **{$env_status_uppercase}**?")) {
+			invoke('deploy:abort');
+		}
 	}
 });
 
@@ -76,12 +71,9 @@ task('deploy:cleanup_failed_release', function () {
 /**
  * Deployment Task
  */
-// desc('Deploys your project');
-// task('deploy', [
-// 	'deploy:precheck'
-// ]);
 desc('Deploys your project');
 task('deploy', [
+	'deploy:precheck',
 	'deploy:prepare',
 	'deploy:vendors',
 	'deploy:publish'

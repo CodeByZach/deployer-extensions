@@ -3,15 +3,46 @@ namespace Deployer;
 
 
 // Set default variables.
-set('autossh_socket_path', '/var/run/autossh');
-set('autossh_localhost',   'localhost');
-set('autossh_log_file',    '/var/log/autossh.log');
+set('autossh_socket_directory', '~/autossh');
+set('autossh_local_host',       'localhost');
+set('autossh_log_file',         '~/autossh.log');
 
 
 // Generate a unique ID for a given ssh tunnel.
-function autosshGenerateId($host, $username, $port, $local_port) {
+function autosshTunnelId($host, $username, $port, $local_port) {
 	$hash = md5($host.$username.$port.$local_port);
 	return substr($hash, 0, 10); // Returns only the first 10 characters (out of 32) of the hash.
+}
+
+
+// Get the socket file path.
+function autosshSocketFile($socket_directory, $tunnel_id) {
+	return "{$socket_directory}/{$tunnel_id}.sock";
+}
+
+
+// Check if port is available.
+function autosshIsPortAvailable($host, $port) {
+	return test("\$(php -r \"\\\$socket = @stream_socket_server('tcp://{$host}:{$port}', \\\$errno, \\\$errstr); echo (\\\$socket ? 'true' : 'false');\")");
+}
+
+
+// Is tunnel already open.
+function autosshIsTunnelOpen($socket_file) {
+	return test("[ $(pgrep -fc \"autossh.*{$socket_file}\") -gt 0 ]");
+}
+
+
+// Open tunnel.
+function autosshOpenTunnel($local_host, $log_file, $username, $host, $port, $key_file, $local_port, $remote_port, $socket_file) {
+	run("AUTOSSH_LOGFILE={$log_file} autossh -f -N -L {$local_port}:{$local_host}:{$remote_port} -o \"ControlPath={$socket_file}\" -p {$port} -i {$key_file} {$username}@{$host}");
+	return autosshIsTunnelOpen($socket_file);
+}
+
+
+// Close tunnel.
+function autosshCloseTunnel($socket_file) {
+	return test("[ $(pkill -fc \"autossh.*{$socket_file}\") -gt 0 ]");
 }
 
 
@@ -28,7 +59,7 @@ task('provision:autossh', function () {
 				throw error('Failed to install autossh');
 			}
 
-			writeln('<info>Autossh installed successfully</info>');
+			info('Autossh installed successfully');
 		}
 	}
 
@@ -36,16 +67,16 @@ task('provision:autossh', function () {
 	$autossh_log_path = run("dirname {{autossh_log_file}}");
 	if (test("[ ! -d {$autossh_log_path} ]")) {
 		if (askConfirmation("Autossh log directory \"{$autossh_log_path}\" does not exist. Would you like to create it?")) {
-			run("mkdir -p {$autossh_log_path}") || throw error("Failed to create autossh log directory: {$autossh_log_path}");
-			writeln("<info>Autossh log directory created: {$autossh_log_path}</info>");
+			run("mkdir -p {$autossh_log_path}");
+			info("Autossh log directory created: {$autossh_log_path}");
 		}
 	}
 
 	// Ensure the socket path exists.
-	if (test('[ ! -d {{autossh_socket_path}} ]')) {
-		if (askConfirmation('Autossh socket directory "{{autossh_socket_path}}" does not exist. Would you like to create it?')) {
-			run('mkdir -p {{autossh_socket_path}}') || throw error('Failed to create autossh socket directory: {{autossh_socket_path}}');
-			writeln('<info>Autossh socket directory created: {{autossh_socket_path}}</info>');
+	if (test('[ ! -d {{autossh_socket_directory}} ]')) {
+		if (askConfirmation('Autossh socket directory "{{autossh_socket_directory}}" does not exist. Would you like to create it?')) {
+			run('mkdir -p {{autossh_socket_directory}}');
+			info('Autossh socket directory created: {{autossh_socket_directory}}');
 		}
 	}
 })->oncePerNode();
@@ -55,29 +86,29 @@ task('provision:autossh', function () {
 desc('Open ssh tunnels');
 task('provision:autossh:open', function () {
 	if (has('autossh')) {
-		invoke('provision:autossh');
+		// invoke('provision:autossh');
 
 		foreach (get('autossh') as $key => $tunnel_config) {
-			$localhost   = get('autossh_localhost');
-			$log_file    = get('autossh_log_file');
-			$socket_path = get('autossh_socket_path');
-			$username    = $tunnel_config['username'];
-			$host        = $tunnel_config['host'];
-			$port        = $tunnel_config['port'];
-			$key_file    = $tunnel_config['key_file'];
-			$local_port  = $tunnel_config['local_port'];
-			$remote_port = $tunnel_config['remote_port'];
+			$local_host       = get('autossh_local_host');
+			$log_file         = get('autossh_log_file');
+			$socket_directory = get('autossh_socket_directory');
+			$username         = $tunnel_config['username'];
+			$host             = $tunnel_config['host'];
+			$port             = $tunnel_config['port'];
+			$key_file         = $tunnel_config['key_file'];
+			$local_port       = $tunnel_config['local_port'];
+			$remote_port      = $tunnel_config['remote_port'];
 
-			$socket_file = $socket_path.'/'.autosshGenerateId($host, $username, $port, $local_port).'.sock';
+			$tunnel_id   = autosshTunnelId($host, $username, $port, $local_port);
+			$socket_file = autosshSocketFile($socket_directory, $tunnel_id);
 
-			// Check if the tunnel is already open.
-			if (!test("autossh -M {$socket_file} -O check {$username}@{$host}")) {
+			// Ensure the tunnel is not already open.
+			if (!autosshIsTunnelOpen($socket_file)) {
 				// Check if the local port is available.
-				if (test("echo > /dev/tcp/{$localhost}/{$local_port}")) {
+				if (autosshIsPortAvailable($local_host, $local_port)) {
 					// Tunnel is not open, local port is available, log and open it.
-					writeln("Opening SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
-					run("autossh -f -N -L {$local_port}:{$localhost}:{$remote_port} -o \"ControlPath={$socket_file}\" -p {$port} -i {$key_file} {$username}@{$host} >> {$log_file} 2>&1") || throw error('Failed to open SSH tunnel');
-					writeln("<info>SSH tunnel opened successfully.</info>");
+					autosshOpenTunnel($local_host, $log_file, $username, $host, $port, $key_file, $local_port, $remote_port, $socket_file) || throw error("Failed to open SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
+					info("Successfully opened SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
 				} else {
 					// Local port is not available, log and abort.
 					throw error("Local port {$local_port} is not available for SSH tunnel: {$username}@{$host} (Remote Port: {$remote_port})");
@@ -92,27 +123,27 @@ task('provision:autossh:open', function () {
 desc('Close ssh tunnels');
 task('provision:autossh:close', function () {
 	if (has('autossh')) {
-		invoke('provision:autossh');
+		// invoke('provision:autossh');
 
 		foreach (get('autossh') as $key => $tunnel_config) {
-			$localhost   = get('autossh_localhost');
-			$log_file    = get('autossh_log_file');
-			$socket_path = get('autossh_socket_path');
-			$username    = $tunnel_config['username'];
-			$host        = $tunnel_config['host'];
-			$port        = $tunnel_config['port'];
-			$key_file    = $tunnel_config['key_file'];
-			$local_port  = $tunnel_config['local_port'];
-			$remote_port = $tunnel_config['remote_port'];
+			$local_host       = get('autossh_local_host');
+			$log_file         = get('autossh_log_file');
+			$socket_directory = get('autossh_socket_directory');
+			$username         = $tunnel_config['username'];
+			$host             = $tunnel_config['host'];
+			$port             = $tunnel_config['port'];
+			$key_file         = $tunnel_config['key_file'];
+			$local_port       = $tunnel_config['local_port'];
+			$remote_port      = $tunnel_config['remote_port'];
 
-			$socket_file = $socket_path.'/'.autosshGenerateId($host, $username, $port, $local_port).'.sock';
+			$tunnel_id   = autosshTunnelId($host, $username, $port, $local_port);
+			$socket_file = autosshSocketFile($socket_directory, $tunnel_id);
 
 			// Check if the tunnel is already open.
-			if (test("autossh -M {$socket_file} -O check {$username}@{$host}")) {
+			if (autosshIsTunnelOpen($socket_file)) {
 				// Tunnel is open, log and close it.
-				writeln("Closing SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})") || throw error('Failed to close SSH tunnel');
-				run("autossh -M {$socket_file} -O exit {$username}@{$host} >> {$log_file} 2>&1");
-				writeln("<info>SSH tunnel closed successfully.</info>");
+				autosshCloseTunnel($tunnel_id) || throw error("Failed to close SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
+				info("Successfully closed SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
 			}
 		}
 	}
