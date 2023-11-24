@@ -19,7 +19,7 @@ set('env_config', function () {
 	if (file_exists($env_config)) {
 		return $env_config;
 	}
-	throw error("The source configuration file '{$env_config}' does not exist.");
+	throw error("The source configuration file \"{$env_config}\" does not exist.");
 });
 
 

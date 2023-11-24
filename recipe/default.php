@@ -29,7 +29,7 @@ task('deploy:precheck', function () {
 	];
 
 	if (!in_array($env_status, $low_risk_env_statuses)) {
-		if (!askConfirmation("Are you sure you want to deploy to **{$env_status_uppercase}**?")) {
+		if (!askConfirmation("Are you sure you want to deploy to [{$env_status_uppercase}]?")) {
 			invoke('deploy:abort');
 		}
 	}
@@ -59,9 +59,9 @@ task('deploy:cleanup_failed_release', function () {
 		run("mv {$releases_log_path}.tmp {$releases_log_path}");
 		run("mv {$release_commits_log_path}.tmp {$release_commits_log_path}");
 
-		info('Failed release has been cleaned up successfully.');
+		writeSuccess('Failed deployment cleaned up successfully.');
 	} else {
-		info('Deployment did not fail before or during "deploy:symlink". No cleanup required.');
+		writeSuccess('Deployment did not fail before, or during "deploy:symlink". No cleanup required.');
 	}
 });
 
@@ -94,4 +94,3 @@ after('deploy:symlink', function () {
 });
 after('deploy:failed', 'deploy:cleanup_failed_release');
 after('deploy:failed', 'deploy:unlock');
-after('deploy:failed', 'deploy:abort');
