@@ -39,6 +39,29 @@ task('deploy:release_commit', function () {
 });
 
 
+// Remove failed release record.
+desc('Remove release information from the record');
+task('deploy:remove_release_record', function () {
+	$release_name = get('release_name');
+
+	// Define temporary paths for the log files.
+	$releases_log_path        = '{{deploy_path}}/.dep/releases_log';
+	$release_commits_log_path = '{{deploy_path}}/.dep/release_commits_log';
+
+	// Remove records of the failed release from the log file copies.
+	run("sed '/\"release_name\":\"{$release_name}\"/d' {$releases_log_path} > {$releases_log_path}.tmp");
+
+	// Overwrite the original log files with the cleaned copies.
+	run("mv {$releases_log_path}.tmp {$releases_log_path}");
+
+	// Remove and overwrite for the "release_commits_log".
+	if (test("[ -f {$release_commits_log_path} ]")) {
+		run("sed '/\"release_name\":\"{$release_name}\"/d' {$release_commits_log_path} > {$release_commits_log_path}.tmp");
+		run("mv {$release_commits_log_path}.tmp {$release_commits_log_path}");
+	}
+});
+
+
 /*
  * Example output:
  * ```

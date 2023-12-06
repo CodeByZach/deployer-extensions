@@ -47,17 +47,8 @@ task('deploy:cleanup_failed_release', function () {
 		// Remove the failed release directory.
 		run("rm -rf {$failed_release_path}");
 
-		// Define temporary paths for the log files.
-		$releases_log_path        = '{{deploy_path}}/.dep/releases_log';
-		$release_commits_log_path = '{{deploy_path}}/.dep/release_commits_log';
-
-		// Remove records of the failed release from the log file copies.
-		run("sed '/\"release_name\":\"{$release_name}\"/d' {$releases_log_path} > {$releases_log_path}.tmp");
-		run("sed '/\"release_name\":\"{$release_name}\"/d' {$release_commits_log_path} > {$release_commits_log_path}.tmp");
-
-		// Overwrite the original log files with the cleaned copies.
-		run("mv {$releases_log_path}.tmp {$releases_log_path}");
-		run("mv {$release_commits_log_path}.tmp {$release_commits_log_path}");
+		// Remove failed release record.
+		invoke('deploy:remove_release_record');
 
 		writeSuccess('Failed deployment cleaned up successfully.');
 	} else {
@@ -75,7 +66,6 @@ desc('Deploys your project');
 task('deploy', [
 	'deploy:precheck',
 	'deploy:prepare',
-	'deploy:vendors',
 	'deploy:publish'
 ]);
 
@@ -86,8 +76,8 @@ task('deploy', [
  * Hooks
  */
 fail('deploy', 'deploy:failed');
+after('deploy:update_code', 'deploy:release_commit');
 before('deploy:prepare', 'deploy:check_env_config');
-after('deploy:prepare', 'deploy:release_commit');
 before('deploy:symlink', 'deploy:upload_env_config');
 after('deploy:symlink', function () {
 	set('symlink_published', true);
