@@ -29,7 +29,7 @@ task('deploy:precheck', function () {
 	];
 
 	if (!in_array($env_status, $low_risk_env_statuses)) {
-		if (!askConfirmation("Are you sure you want to deploy to [{$env_status_uppercase}]?")) {
+		if (!askConfirmation("\e[0mAre you sure you want to deploy to [\e[1m\e[93m{$env_status_uppercase}\e[0m]?")) {
 			invoke('deploy:abort');
 		}
 	}
