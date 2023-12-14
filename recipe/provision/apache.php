@@ -3,8 +3,8 @@ namespace Deployer;
 
 
 // Set default log locations.
-set('apache_error_log_files',  '/var/log/apache2/logs/error.log');
-set('apache_access_log_files', '/var/log/apache2/logs/access.log');
+set('apache_error_log_files',  '/var/log/apache2/error.log');
+set('apache_access_log_files', '/var/log/apache2/access.log');
 
 
 // Tail the apache php error logs.

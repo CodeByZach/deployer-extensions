@@ -33,6 +33,8 @@ task('deploy:precheck', function () {
 			invoke('deploy:abort');
 		}
 	}
+
+	invoke('deploy:check_env_config');
 });
 
 
@@ -76,9 +78,8 @@ task('deploy', [
  * Hooks
  */
 fail('deploy', 'deploy:failed');
-after('deploy:update_code', 'deploy:release_commit');
-before('deploy:prepare', 'deploy:check_env_config');
-before('deploy:symlink', 'deploy:upload_env_config');
+after('deploy:update_code', 'deploy:upload_env_config');
+after('deploy:prepare', 'deploy:release_commit');
 after('deploy:symlink', function () {
 	set('symlink_published', true);
 });
