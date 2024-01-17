@@ -1,10 +1,8 @@
 <?php
 namespace Deployer;
 
-require(__DIR__.'/provision/apache.php');
-require(__DIR__.'/provision/autossh.php');
-require(__DIR__.'/deploy/release_commit.php');
 require(__DIR__.'/deploy/environment.php');
+require(__DIR__.'/deploy/release_commit.php');
 require(__DIR__.'/deploy/utils.php');
 
 
@@ -25,7 +23,8 @@ task('deploy:precheck', function () {
 	$env_status            = get('env_status');
 	$env_status_uppercase  = strtoupper($env_status);
 	$low_risk_env_statuses = [
-		'development'
+		'development',
+		'local'
 	];
 
 	if (!in_array($env_status, $low_risk_env_statuses)) {
