@@ -37,6 +37,12 @@ function writeError(string $message) {
 }
 
 
+// Writes output with a prepended line break.
+function writeOutput(string $message) {
+	writeln("\n".$message);
+}
+
+
 // Abort a deployment.
 desc('Abort a deployment');
 task('deploy:abort', function () {

@@ -43,32 +43,48 @@ task('provision:apache:permissions', function () {
 
 
 // Start apache.
-desc('Start apache');
+desc('Starts apache');
 task('provision:apache:start', function () {
-	$output = run('sudo systemctl apache2 start');
+	$output = run('sudo systemctl start apache2.service');
 	writePlain($output);
 });
 
 
 // Stop apache.
-desc('Stop apache');
+desc('Stops apache');
 task('provision:apache:stop', function () {
-	$output = run('sudo systemctl apache2 stop');
+	$output = run('sudo systemctl stop apache2.service');
 	writePlain($output);
 });
 
 
 // Restart apache.
-desc('Restart apache');
+desc('Restarts apache');
 task('provision:apache:restart', function () {
-	$output = run('sudo systemctl apache2 restart');
-	writePlain($output);
+	$output = run('sudo systemctl restart apache2.service');
+	writeOutput($output);
 });
 
 
 // Get apache status.
-desc('Get apache status');
+desc('Gets apache status');
 task('provision:apache:status', function () {
-	$output = run('sudo systemctl apache2 status');
-	writePlain($output);
+	$output = run('sudo systemctl status apache2.service');
+	writeOutput($output);
+});
+
+
+// Print active apache modules.
+desc('Lists active apache modules');
+task('provision:apache:list', function () {
+	$output = run('apache2ctl -M');
+	writeOutput($output);
+});
+
+
+// Get the apache version.
+desc('Gets the apache version');
+task('provision:apache:version', function () {
+	$output = run("apache2ctl -v");
+	writeOutput($output);
 });

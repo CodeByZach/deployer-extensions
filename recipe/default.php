@@ -1,9 +1,9 @@
 <?php
 namespace Deployer;
 
-require(__DIR__.'/deploy/environment.php');
-require(__DIR__.'/deploy/release_commit.php');
-require(__DIR__.'/deploy/utils.php');
+require_once(__DIR__.'/deploy/environment.php');
+require_once(__DIR__.'/deploy/release_commit.php');
+require_once(__DIR__.'/deploy/utils.php');
 
 
 /**

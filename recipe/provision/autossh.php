@@ -23,7 +23,7 @@ function autosshSocketFile($socket_directory, $tunnel_id) {
 
 // Check if port is available.
 function autosshIsPortAvailable($host, $port) {
-	return test("\$(php -r \"\\\$socket = @stream_socket_server('tcp://{$host}:{$port}', \\\$errno, \\\$errstr); echo (\\\$socket ? 'true' : 'false');\")");
+	return test("\$({{bin/php}} -r \"\\\$socket = @stream_socket_server('tcp://{$host}:{$port}', \\\$errno, \\\$errstr); echo (\\\$socket ? 'true' : 'false');\")");
 }
 
 
@@ -83,7 +83,7 @@ task('provision:autossh', function () {
 
 
 // Open ssh tunnels.
-desc('Open ssh tunnels');
+desc('Opens ssh tunnels');
 task('provision:autossh:open', function () {
 	if (has('autossh')) {
 		// invoke('provision:autossh');
@@ -115,12 +115,14 @@ task('provision:autossh:open', function () {
 				}
 			}
 		}
+	} else {
+		writeWarning("Missing/empty tunnel configuration");
 	}
 })->oncePerNode();
 
 
 // Close ssh tunnels.
-desc('Close ssh tunnels');
+desc('Closes ssh tunnels');
 task('provision:autossh:close', function () {
 	if (has('autossh')) {
 		// invoke('provision:autossh');
@@ -146,5 +148,48 @@ task('provision:autossh:close', function () {
 				writeSuccess("Successfully closed SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
 			}
 		}
+	} else {
+		writeWarning("Missing/empty tunnel configuration");
 	}
-})->oncePerNode();
+});
+
+
+// Get list of ssh tunnels.
+desc('Lists ssh tunnels');
+task('provision:autossh:list', function () {
+	if (has('autossh')) {
+		// invoke('provision:autossh');
+
+		foreach (get('autossh') as $key => $tunnel_config) {
+			$local_host       = get('autossh_local_host');
+			$log_file         = get('autossh_log_file');
+			$socket_directory = get('autossh_socket_directory');
+			$username         = $tunnel_config['username'];
+			$host             = $tunnel_config['host'];
+			$port             = $tunnel_config['port'];
+			$key_file         = $tunnel_config['key_file'];
+			$local_port       = $tunnel_config['local_port'];
+			$remote_port      = $tunnel_config['remote_port'];
+
+			$tunnel_id   = autosshTunnelId($host, $username, $port, $local_port);
+			$socket_file = autosshSocketFile($socket_directory, $tunnel_id);
+
+			// Check if the tunnel is open.
+			if (autosshIsTunnelOpen($socket_file)) {
+				writeSuccess("Active SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
+			} else {
+				writeWarning("Inactive SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
+			}
+		}
+	} else {
+		writeWarning("Missing/empty tunnel configuration");
+	}
+});
+
+
+// Get the autossh version.
+desc('Gets the autossh version');
+task('provision:autossh:version', function () {
+	$output = run("autossh -V");
+	writeOutput($output);
+});
