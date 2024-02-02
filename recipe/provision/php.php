@@ -2,16 +2,16 @@
 namespace Deployer;
 
 
-// Print active php extensions.
-desc('Lists active php extensions');
+// Print active PHP extensions.
+desc('Lists active PHP extensions');
 task('provision:php:list', function () {
 	$output = run('{{bin/php}} -m');
 	writeOutput($output);
 });
 
 
-// Print active php extensions with versions.
-desc('Lists active php extensions with versions');
+// Print active PHP extensions with versions.
+desc('Lists active PHP extensions with versions');
 task('provision:php:list_versions', function () {
 	$php_code = <<<PHP
 \$extensions = get_loaded_extensions();
@@ -30,8 +30,8 @@ PHP;
 });
 
 
-// Get the php version.
-desc('Gets the php version');
+// Get the PHP version.
+desc('Gets the PHP version');
 task('provision:php:version', function () {
 	$output = run("{{bin/php}} --version");
 	writeOutput($output);
