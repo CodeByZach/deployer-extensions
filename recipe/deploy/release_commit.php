@@ -103,9 +103,9 @@ task('releases:list', function () {
 			$status .= ' (current)';
 		}
 		$revision = 'unknown'; // Initialize to 'unknown' by default
-		foreach ($release_commits_log as $commitInfo) {
-			if (isset($commitInfo['release_name']) && $commitInfo['release_name'] === $release) {
-				$revision = $commitInfo['commit'];
+		foreach ($release_commits_log as $commit_info) {
+			if (isset($commit_info['release_name']) && $commit_info['release_name'] === $release) {
+				$revision = $commit_info['commit'];
 				break; // Stop searching once a matching release is found
 			}
 		}

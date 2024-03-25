@@ -2,6 +2,13 @@
 namespace Deployer;
 
 
+// Returns the local root directory of the project.
+set('local_path', function () {
+	$local_root = runLocally('git rev-parse --show-toplevel');
+	return rtrim($local_root, "\r\n");
+});
+
+
 // Returns the environment status.
 set('env_status', function () {
 	$labels = get('labels');
@@ -14,8 +21,9 @@ set('env_status', function () {
 
 // Gets the environment configuration type.
 set('env_config_type', function () {
-	$env_config_php    = "env.php.example";
-	$env_config_dotenv = ".env.example";
+	$local_path        = get('local_path');
+	$env_config_php    = "{$local_path}/env.php.example";
+	$env_config_dotenv = "{$local_path}/.env.example";
 
 	$env_config_php_exists    = file_exists($env_config_php);
 	$env_config_dotenv_exists = file_exists($env_config_dotenv);
@@ -38,17 +46,18 @@ set('env_config_type', function () {
 
 // Gets the appropriate environment-specific configuration file for deployment.
 set('env_config', function () {
+	$local_path      = get('local_path');
 	$env_status      = get('env_status');
 	$env_config_type = get('env_config_type');
 
 	switch ($env_config_type) {
 		case 'dotenv':
-			$env_config = ".env.{$env_status}";
+			$env_config = "{$local_path}/.env.{$env_status}";
 			break;
 
 		case 'php':
 		default:
-			$env_config = "env.{$env_status}.php";
+			$env_config = "{$local_path}/env.{$env_status}.php";
 			break;
 	}
 
