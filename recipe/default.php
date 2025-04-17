@@ -1,7 +1,7 @@
 <?php
 namespace Deployer;
 
-require_once(__DIR__.'/deploy/environment.php');
+require_once(__DIR__.'/deploy/env.php');
 require_once(__DIR__.'/deploy/release_commit.php');
 require_once(__DIR__.'/deploy/utils.php');
 
@@ -33,7 +33,7 @@ task('deploy:precheck', function () {
 		}
 	}
 
-	invoke('deploy:check_env_config');
+	invoke('deploy:env:check');
 });
 
 
@@ -49,7 +49,7 @@ task('deploy:cleanup_failed_release', function () {
 		run("rm -rf {$failed_release_path}");
 
 		// Remove failed release record.
-		invoke('deploy:remove_release_record');
+		invoke('deploy:release:remove');
 
 		writeSuccess('Failed deployment cleaned up successfully.');
 	} else {
@@ -77,8 +77,8 @@ task('deploy', [
  * Hooks
  */
 fail('deploy', 'deploy:failed');
-after('deploy:update_code', 'deploy:upload_env_config');
-after('deploy:prepare', 'deploy:release_commit');
+after('deploy:update_code', 'deploy:env:upload');
+after('deploy:prepare', 'deploy:release:commit');
 after('deploy:symlink', function () {
 	set('symlink_published', true);
 });

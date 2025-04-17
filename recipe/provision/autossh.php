@@ -1,6 +1,8 @@
 <?php
 namespace Deployer;
 
+use Deployer\Exception\Exception;
+
 
 // Set default variables.
 set('autossh_socket_directory', '~/autossh');
@@ -56,7 +58,7 @@ task('provision:autossh', function () {
 
 			// Check if the installation was successful.
 			if (!commandExist('autossh')) {
-				throw error('Failed to install autossh');
+				throw new Exception('Failed to install autossh');
 			}
 
 			writeSuccess('Autossh installed successfully');
@@ -107,11 +109,11 @@ task('provision:autossh:open', function () {
 				// Check if the local port is available.
 				if (autosshIsPortAvailable($local_host, $local_port)) {
 					// Tunnel is not open, local port is available, log and open it.
-					autosshOpenTunnel($local_host, $log_file, $username, $host, $port, $key_file, $local_port, $remote_port, $socket_file) || throw error("Failed to open SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
+					autosshOpenTunnel($local_host, $log_file, $username, $host, $port, $key_file, $local_port, $remote_port, $socket_file) || throw new Exception("Failed to open SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
 					writeSuccess("Successfully opened SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
 				} else {
 					// Local port is not available, log and abort.
-					throw error("Local port {$local_port} is not available for SSH tunnel: {$username}@{$host} (Remote Port: {$remote_port})");
+					throw new Exception("Local port {$local_port} is not available for SSH tunnel: {$username}@{$host} (Remote Port: {$remote_port})");
 				}
 			}
 		}
@@ -144,7 +146,7 @@ task('provision:autossh:close', function () {
 			// Check if the tunnel is already open.
 			if (autosshIsTunnelOpen($socket_file)) {
 				// Tunnel is open, log and close it.
-				autosshCloseTunnel($tunnel_id) || throw error("Failed to close SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
+				autosshCloseTunnel($tunnel_id) || throw new Exception("Failed to close SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
 				writeSuccess("Successfully closed SSH tunnel: {$username}@{$host} (Local Port: {$local_port}, Remote Port: {$remote_port})");
 			}
 		}

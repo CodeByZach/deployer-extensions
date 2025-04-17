@@ -1,6 +1,6 @@
 # Deployer
 ## Requirements
-- deployer/deployer (^7.3) [Docs](https://deployer.org/docs/7.x/getting-started)
+- deployer/deployer (^7.5.12) [Docs](https://deployer.org/docs/7.x/getting-started)
 
 
 ## Installation

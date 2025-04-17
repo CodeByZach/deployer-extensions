@@ -3,12 +3,14 @@ namespace Deployer;
 
 use Symfony\Component\Console\Helper\Table;
 
+use function Deployer\Support\escape_shell_argument;
+
 
 // Get releases from the `.dep/release_commits_log` log file.
 set('release_commits_log', function () {
 	cd('{{deploy_path}}');
 
-	if (test('[ ! -f .dep/release_commits_log ]')) {
+	if (!test('[ -f .dep/release_commits_log ]')) {
 		return [];
 	}
 
@@ -22,7 +24,7 @@ set('release_commits_log', function () {
 
 // Clean up unfinished releases and prepare next release.
 desc('Store commit hash with release_name for the current release');
-task('deploy:release_commit', function () {
+task('deploy:release:commit', function () {
 	$git    = get('bin/git');
 	$target = get('target');
 	$rev    = run("cd {{deploy_path}}/.dep/repo && ({$git} rev-list {$target} -1)");
@@ -34,14 +36,14 @@ task('deploy:release_commit', function () {
 	];
 
 	// Save metainfo about release.
-	$json = escapeshellarg(json_encode($metainfo));
+	$json = escape_shell_argument(json_encode($metainfo));
 	run("echo {$json} >> {{deploy_path}}/.dep/release_commits_log");
 });
 
 
 // Remove failed release record.
 desc('Remove release information from the record');
-task('deploy:remove_release_record', function () {
+task('deploy:release:remove', function () {
 	$release_name = get('release_name');
 
 	// Define temporary paths for the log files.

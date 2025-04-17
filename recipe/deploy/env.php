@@ -1,6 +1,8 @@
 <?php
 namespace Deployer;
 
+use Deployer\Exception\Exception;
+
 
 // Returns the local root directory of the project.
 set('local_path', function () {
@@ -15,7 +17,7 @@ set('env_status', function () {
 	if ($labels && isset($labels['env'])) {
 		return $labels['env'];
 	}
-	throw error('The "env" label is not set in the host configuration.');
+	throw new Exception('The "env" label is not set in the host configuration.');
 });
 
 
@@ -29,7 +31,7 @@ set('env_config_type', function () {
 	$env_config_dotenv_exists = file_exists($env_config_dotenv);
 
 	if ($env_config_php_exists && $env_config_dotenv_exists) {
-		throw error("Could not detect env configuration type. Both \"{$env_config_php}\" and \"{$env_config_dotenv}\" cannot exist simultaneously.");
+		throw new Exception("Could not detect env configuration type. Both \"{$env_config_php}\" and \"{$env_config_dotenv}\" cannot exist simultaneously.");
 	}
 
 	if ($env_config_php_exists) {
@@ -40,7 +42,7 @@ set('env_config_type', function () {
 		return 'dotenv';
 	}
 
-	throw error("Could not detect env configuration type. Neither \"{$env_config_php}\" or \"{$env_config_dotenv}\" present.");
+	throw new Exception("Could not detect env configuration type. Neither \"{$env_config_php}\" or \"{$env_config_dotenv}\" present.");
 });
 
 
@@ -65,20 +67,20 @@ set('env_config', function () {
 		return $env_config;
 	}
 
-	throw error("The source configuration file \"{$env_config}\" does not exist.");
+	throw new Exception("The source configuration file \"{$env_config}\" does not exist.");
 });
 
 
 // Check whether the environment-specific configuration file exits.
 desc('Check for the existence of the environment-specific configuration file');
-task('deploy:check_env_config', function () {
+task('deploy:env:check', function () {
 	get('env_config');
 });
 
 
 // Deploy the configuration file.
 desc('Upload environment-specific configuration file to deployment');
-task('deploy:upload_env_config', function () {
+task('deploy:env:upload', function () {
 	$env_config_type   = get('env_config_type');
 	$source_env_config = get('env_config');
 	// $shared_files      = get('shared_files');
