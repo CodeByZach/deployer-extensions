@@ -2,7 +2,7 @@
 namespace Deployer;
 
 require_once(__DIR__.'/deploy/env.php');
-require_once(__DIR__.'/deploy/release_commit.php');
+require_once(__DIR__.'/deploy/release.php');
 require_once(__DIR__.'/deploy/utils.php');
 
 

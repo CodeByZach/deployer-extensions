@@ -4,7 +4,7 @@ Custom deployment recipes and provisioning tasks for [Deployer](https://deployer
 
 ## Requirements
 
-- PHP ^8.4
+- PHP ^8.2
 - deployer/deployer ^7.5.12
 
 ## Installation
