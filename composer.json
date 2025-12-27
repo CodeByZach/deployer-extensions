@@ -3,7 +3,7 @@
     "description": "Custom Deployer recipes and tasks",
     "type": "library",
     "license": "MIT",
-    "homepage": "https://github.com/CodeByZach/deployer",
+    "homepage": "https://github.com/CodeByZach/deployer-extensions",
     "authors": [
         {
             "name": "Zachary Miller",
@@ -25,11 +25,11 @@
         "phpstan": "phpstan analyse --configuration=phpstan.neon --memory-limit=1G"
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "deployer/deployer": "^7.5.12"
     },
     "require-dev": {
-        "pestphp/pest": "^3.8",
+        "pestphp/pest": "^4.2",
         "phpstan/phpstan": "^2.1"
     },
     "config": {
