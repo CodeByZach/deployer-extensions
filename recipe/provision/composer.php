@@ -1,6 +1,7 @@
 <?php
 namespace Deployer;
 
+// @phpstan-ignore-next-line
 require_once('recipe/composer.php');
 
 

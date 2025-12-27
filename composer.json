@@ -1,0 +1,48 @@
+{
+    "name": "codebyzach/deployer-extensions",
+    "description": "Custom Deployer recipes and tasks",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/CodeByZach/deployer",
+    "authors": [
+        {
+            "name": "Zachary Miller",
+            "email": "codebyzach@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "CodeByZach\\DeployerExtensions\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "phpstan": "phpstan analyse --configuration=phpstan.neon --memory-limit=1G"
+    },
+    "require": {
+        "php": "^8.2",
+        "deployer/deployer": "^7.5.12"
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.8",
+        "phpstan/phpstan": "^2.1"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "preferred-install": {
+            "deployer/deployer": "source"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

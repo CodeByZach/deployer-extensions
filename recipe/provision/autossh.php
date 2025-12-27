@@ -52,17 +52,16 @@ function autosshCloseTunnel($socket_file) {
 desc('Provision autossh');
 task('provision:autossh', function () {
 	// Ensure autossh is installed.
-	if (!commandExist('autossh')) {
-		if (askConfirmation('Autossh is not installed. Would you like to install it?')) {
-			run('apt-get update && apt-get install -y autossh');
+	$installed = commandExist('autossh');
+	if (!$installed && askConfirmation('Autossh is not installed. Would you like to install it?')) {
+		run('apt-get update && apt-get install -y autossh');
 
-			// Check if the installation was successful.
-			if (!commandExist('autossh')) {
-				throw new Exception('Failed to install autossh');
-			}
-
-			writeSuccess('Autossh installed successfully');
+		// Check if the installation was successful.
+		if (!commandExist('autossh')) {
+			throw new Exception('Failed to install autossh');
 		}
+
+		writeSuccess('Autossh installed successfully');
 	}
 
 	// Ensure the log directory exists.
