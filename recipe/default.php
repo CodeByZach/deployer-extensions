@@ -61,21 +61,9 @@ task('deploy:cleanup_failed_release', function () {
 
 
 /**
- * Deployment Task
- */
-desc('Deploys your project');
-task('deploy', [
-	'deploy:precheck',
-	'deploy:prepare',
-	'deploy:publish'
-]);
-
-
-
-
-/**
  * Hooks
  */
+before('deploy', 'deploy:precheck');
 fail('deploy', 'deploy:failed');
 after('deploy:update_code', 'deploy:env:upload');
 after('deploy:prepare', 'deploy:release:commit');
