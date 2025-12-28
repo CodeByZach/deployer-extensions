@@ -7,7 +7,14 @@ require_once(__DIR__.'/deploy/utils.php');
 
 
 /**
- * Global options
+ * Register this recipe with Deployer.
+ */
+add('recipes', ['default']);
+
+
+/**
+ * Whether the symlink step completed successfully.
+ * Used to determine if cleanup is needed on failed deployments.
  */
 set('symlink_published', false);
 
@@ -28,7 +35,7 @@ task('deploy:precheck', function () {
 	];
 
 	if (!in_array($env_status, $low_risk_env_statuses)) {
-		if (!askConfirmation("\e[0mAre you sure you want to deploy to [\e[1m\e[93m{$env_status_uppercase}\e[0m]?")) {
+		if (!askConfirmation("Are you sure you want to deploy to [<fg=yellow;options=bold>{$env_status_uppercase}</>]?")) {
 			invoke('deploy:abort');
 		}
 	}

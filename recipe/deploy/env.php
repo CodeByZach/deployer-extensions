@@ -1,27 +1,39 @@
 <?php
 namespace Deployer;
 
-use Deployer\Exception\Exception;
+use Deployer\Exception\ConfigurationException;
 
 
-// Returns the local root directory of the project.
+/**
+ * Local root directory of the project, detected via git.
+ */
 set('local_path', function () {
 	$local_root = runLocally('git rev-parse --show-toplevel');
 	return rtrim($local_root, "\r\n");
 });
 
 
-// Returns the environment status.
+/**
+ * Environment status from host labels (e.g., 'production', 'staging', 'development').
+ * Requires the `env` label to be set in the host configuration.
+ * ```php
+ * host('example.com')
+ *     ->setLabels(['env' => 'production']);
+ * ```
+ */
 set('env_status', function () {
 	$labels = get('labels');
 	if ($labels && isset($labels['env'])) {
 		return $labels['env'];
 	}
-	throw new Exception('The "env" label is not set in the host configuration.');
+	throw new ConfigurationException('The "env" label is not set in the host configuration.');
 });
 
 
-// Gets the environment configuration type.
+/**
+ * Detected environment configuration type ('php' or 'dotenv').
+ * Auto-detected based on presence of `env.php.example` or `.env.example` in project root.
+ */
 set('env_config_type', function () {
 	$local_path        = get('local_path');
 	$env_config_php    = "{$local_path}/env.php.example";
@@ -31,7 +43,7 @@ set('env_config_type', function () {
 	$env_config_dotenv_exists = file_exists($env_config_dotenv);
 
 	if ($env_config_php_exists && $env_config_dotenv_exists) {
-		throw new Exception("Could not detect env configuration type. Both \"{$env_config_php}\" and \"{$env_config_dotenv}\" cannot exist simultaneously.");
+		throw new ConfigurationException("Could not detect env configuration type. Both \"{$env_config_php}\" and \"{$env_config_dotenv}\" cannot exist simultaneously.");
 	}
 
 	if ($env_config_php_exists) {
@@ -42,11 +54,15 @@ set('env_config_type', function () {
 		return 'dotenv';
 	}
 
-	throw new Exception("Could not detect env configuration type. Neither \"{$env_config_php}\" or \"{$env_config_dotenv}\" present.");
+	throw new ConfigurationException("Could not detect env configuration type. Neither \"{$env_config_php}\" or \"{$env_config_dotenv}\" present.");
 });
 
 
-// Gets the appropriate environment-specific configuration file for deployment.
+/**
+ * Path to the environment-specific configuration file for deployment.
+ * Resolved based on `env_status` and `env_config_type`.
+ * Examples: `.env.production`, `env.staging.php`
+ */
 set('env_config', function () {
 	$local_path      = get('local_path');
 	$env_status      = get('env_status');
@@ -67,18 +83,22 @@ set('env_config', function () {
 		return $env_config;
 	}
 
-	throw new Exception("The source configuration file \"{$env_config}\" does not exist.");
+	throw new ConfigurationException("The source configuration file \"{$env_config}\" does not exist.");
 });
 
 
-// Check whether the environment-specific configuration file exits.
+/**
+ * Validate environment configuration file exists before deployment.
+ */
 desc('Check for the existence of the environment-specific configuration file');
 task('deploy:env:check', function () {
 	get('env_config');
 });
 
 
-// Deploy the configuration file.
+/**
+ * Upload environment configuration file to the release directory.
+ */
 desc('Upload environment-specific configuration file to deployment');
 task('deploy:env:upload', function () {
 	$env_config_type   = get('env_config_type');

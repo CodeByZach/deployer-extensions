@@ -4,7 +4,9 @@ namespace Deployer;
 use function Deployer\Support\escape_shell_argument;
 
 
-// Print active PHP extensions.
+/**
+ * List all loaded PHP extensions.
+ */
 desc('Lists active PHP extensions');
 task('provision:php:list', function () {
 	$output = run('{{bin/php}} -m');
@@ -12,7 +14,9 @@ task('provision:php:list', function () {
 });
 
 
-// Print active PHP extensions with versions.
+/**
+ * List all loaded PHP extensions with their versions.
+ */
 desc('Lists active PHP extensions with versions');
 task('provision:php:list_versions', function () {
 	$php_code = <<<PHP
@@ -32,7 +36,9 @@ PHP;
 });
 
 
-// Get the PHP version.
+/**
+ * Display PHP version.
+ */
 desc('Gets the PHP version');
 task('provision:php:version', function () {
 	$output = run("{{bin/php}} --version");
