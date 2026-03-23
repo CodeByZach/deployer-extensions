@@ -26,21 +26,21 @@
     },
     "require": {
         "php": "^8.2",
-        "deployer/deployer": "^7.5.12"
+        "deployer/deployer": "^7.5.12|^8.0@RC"
     },
     "require-dev": {
-        "pestphp/pest": "^4.2",
-        "phpstan/phpstan": "^2.1.33"
+        "pestphp/pest": "^4.4",
+        "phpstan/phpstan": "^2.1.42"
     },
     "config": {
         "optimize-autoloader": true,
-        "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
         },
         "preferred-install": {
-            "deployer/deployer": "source"
+            "deployer/deployer": "source",
+            "*": "dist"
         }
     },
     "minimum-stability": "stable",

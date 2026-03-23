@@ -1,12 +1,8 @@
-includes:
-    - vendor/deployer/deployer/phpstan.neon
-
 parameters:
     level: 5
     paths:
         - src/
         - recipe/
-    ignoreErrors:
-        - message: '#.*#'
-          path: vendor/deployer/deployer/
+    scanDirectories:
+        - vendor/deployer/deployer/src/
     reportUnmatchedIgnoredErrors: false

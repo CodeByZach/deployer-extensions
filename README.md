@@ -5,7 +5,7 @@ Custom deployment recipes and provisioning tasks for [Deployer](https://deployer
 ## Requirements
 
 - PHP ^8.2
-- deployer/deployer ^7.5.12
+- deployer/deployer ^7.5.12 or ^8.0
 
 ## Installation
 
@@ -84,4 +84,4 @@ composer phpstan
 
 ## License
 
-MIT
+[MIT](LICENSE)
