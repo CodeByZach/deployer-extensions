@@ -1,9 +1,6 @@
 <?php
 namespace Deployer;
 
-// @phpstan-ignore-next-line
-require_once('recipe/composer.php');
-
 
 /**
  * Directory where Composer will be installed globally.
