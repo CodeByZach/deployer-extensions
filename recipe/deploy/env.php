@@ -97,13 +97,15 @@ task('deploy:env:check', function () {
 
 
 /**
- * Upload environment configuration file to the release directory.
+ * Upload environment configuration file to the server.
+ * If the config file is in shared_files, uploads to the shared directory
+ * so it persists across releases. Otherwise uploads to the release directory.
  */
 desc('Upload environment-specific configuration file to deployment');
 task('deploy:env:upload', function () {
 	$env_config_type   = get('env_config_type');
 	$source_env_config = get('env_config');
-	// $shared_files      = get('shared_files');
+	$shared_files      = get('shared_files');
 
 	switch ($env_config_type) {
 		case 'dotenv':
@@ -117,10 +119,9 @@ task('deploy:env:upload', function () {
 	}
 
 	$target_env_config = "{{release_or_current_path}}/{$env_config_filename}";
-	// if ($shared_files && in_array($env_config_filename, $shared_files)) {
-	// 	// If the config file is shared, that is where we'll upload it.
-	// 	$target_env_config = "{{deploy_path}}/shared/{$env_config_filename}";
-	// }
+	if ($shared_files && in_array($env_config_filename, $shared_files)) {
+		$target_env_config = "{{deploy_path}}/shared/{$env_config_filename}";
+	}
 
 	upload($source_env_config, $target_env_config);
 });
