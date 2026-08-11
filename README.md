@@ -60,11 +60,11 @@ recipe can be loaded on its own without pulling in the others.
 
 ## Available Recipes
 
-### Deployment (`recipe/deploy/`)
+### Deployment
 
 | Recipe | Description |
 |--------|-------------|
-| `default` | Main deployment workflow with pre-flight checks |
+| `default` | Main deployment workflow with pre-flight checks; loads the three below |
 | `deploy/env` | Environment configuration management |
 | `deploy/release` | Release and commit tracking |
 | `deploy/utils` | The `deploy:abort` task |
@@ -81,7 +81,7 @@ recipe can be loaded on its own without pulling in the others.
 
 ## Notes
 
-Two places where these recipes deliberately sit alongside Deployer's own. Both are
+Three places where these recipes deliberately sit alongside Deployer's own. All are
 intentional, not oversights:
 
 - **`provision:composer:install`** is *not* named `provision:composer`. Deployer has
@@ -117,6 +117,9 @@ composer check
 
 # Fix code style
 composer fix
+
+# Run read-only tasks against localhost (also runs in CI)
+composer smoke
 ```
 
 ## License

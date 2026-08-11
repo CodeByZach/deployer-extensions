@@ -11,8 +11,6 @@ namespace Deployer;
 
 use CodeByZach\DeployerExtensions\Loader;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\NullOutput;
 
 $root = dirname(__DIR__, 2);
 
@@ -21,7 +19,7 @@ require $root . '/vendor/autoload.php';
 // Mirrors what bin/dep does, so `require 'recipe/common.php'` resolves.
 set_include_path($root . '/vendor/deployer/deployer' . PATH_SEPARATOR . get_include_path());
 
-$deployer = new Deployer(new Application(), new ArrayInput([]), new NullOutput());
+$deployer = new Deployer(new Application());
 
 require 'recipe/common.php';
 

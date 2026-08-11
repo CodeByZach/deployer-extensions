@@ -4,11 +4,6 @@ namespace Deployer;
 
 use Deployer\Exception\GracefulShutdownException;
 
-/*
- * The write*() helpers moved to src/functions.php, where they are autoloaded.
- */
-
-
 /**
  * Abort a deployment gracefully.
  */

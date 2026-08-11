@@ -33,13 +33,13 @@
     "require": {
         "php": "^8.4",
         "ext-json": "*",
-        "deployer/deployer": "^8.0"
+        "deployer/deployer": "^8.0",
+        "symfony/console": "^7.4.0 || ^8.0.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95",
         "pestphp/pest": "^5.1",
         "phpstan/phpstan": "^2.2",
-        "symfony/console": "^7.4.0 || ^8.0.0",
         "symfony/process": "^7.4.0 || ^8.0.0"
     },
     "config": {

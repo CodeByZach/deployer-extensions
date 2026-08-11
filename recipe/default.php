@@ -55,21 +55,35 @@ task('deploy:mark_symlink_published', function () {
 // Define a custom task to clean up a failed release if necessary.
 desc('Clean up a failed release if the deployment failed before or during symlink');
 task('deploy:cleanup_failed_release', function () {
+    // Nothing to clean up if the deploy failed before deploy:setup built the paths --
+    // and reading release_name below would itself fail, masking the original error.
+    if (!test('[ -d {{deploy_path}}/releases ]')) {
+        return;
+    }
+
     // Check if the symlink step was completed successfully.
     if (!get('symlink_published')) {
         $release_name = get('release_name');
 
-        // Second, independent check before an irreversible delete: never remove whatever
-        // `current` points at. Derived from the filesystem rather than from config, so it
-        // still holds if symlink_published is wrong.
+        // Three guards before an irreversible delete, because release_name is
+        // operator-supplied via `-o release_name=...`:
+
+        // It must be one path segment. quote() leaves `/` and `..` untouched, so it is
+        // shell-safe but not traversal-safe.
+        if ($release_name === '' || basename($release_name) !== $release_name) {
+            writeWarning("Refusing to clean up suspicious release name \"{$release_name}\".");
+            return;
+        }
+
+        // Never remove whatever `current` points at. Read from the filesystem, so it
+        // holds even when symlink_published does not.
         if (basename(run('readlink {{current_path}} || true')) === $release_name) {
             writeWarning("Release \"{$release_name}\" is live; skipping cleanup.");
             return;
         }
 
-        // Remove the failed release directory, if it got as far as being created. Only
-        // release_name is quoted; quoting deploy_path would break `~/...` paths, since
-        // bash does not tilde-expand inside the $'...' quote() emits.
+        // Only release_name is quoted; quoting deploy_path would break `~/...` paths,
+        // since bash does not tilde-expand inside the $'...' quote() emits.
         run('rm -rf {{deploy_path}}/releases/' . quote($release_name));
 
         // Remove failed release record.
@@ -93,5 +107,7 @@ before('deploy', 'deploy:precheck');
 after('deploy:update_code', 'deploy:env:upload');
 after('deploy:prepare', 'deploy:release:commit');
 after('deploy:symlink', 'deploy:mark_symlink_published');
-after('deploy:failed', 'deploy:cleanup_failed_release');
+// Unlock first: a throw in cleanup aborts the remaining deploy:failed hooks, and a
+// stranded .dep/deploy.lock blocks the next deploy entirely.
 after('deploy:failed', 'deploy:unlock');
+after('deploy:failed', 'deploy:cleanup_failed_release');

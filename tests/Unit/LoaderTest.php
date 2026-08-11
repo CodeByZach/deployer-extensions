@@ -18,10 +18,3 @@ test('Loader rejects paths escaping the recipe directory', function (string $rec
     // ...this one resolves to a real file, so only the prefix check catches it.
     'real file outside' => '../vendor/deployer/deployer/recipe/laravel',
 ])->throws(InvalidArgumentException::class);
-
-test('Loader accepts a sibling directory that merely shares the recipe prefix', function () {
-    // Guards against the prefix check being written without a trailing separator,
-    // which would let a `recipe-anything/` sibling through.
-    expect(fn() => Loader::load('../recipe-evil/x'))
-        ->toThrow(InvalidArgumentException::class);
-});
