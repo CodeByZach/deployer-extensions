@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 /**
@@ -18,7 +19,7 @@ set('composer_install_directory', '/usr/local/bin');
  */
 desc('Installs Composer via the official installer');
 task('provision:composer:install', function () {
-	run('{{bin/php}} -r "copy(\'https://getcomposer.org/installer\', \'composer-setup.php\');" && sudo {{bin/php}} composer-setup.php --install-dir={{composer_install_directory}} && {{bin/php}} -r "unlink(\'composer-setup.php\');"');
+    run('{{bin/php}} -r "copy(\'https://getcomposer.org/installer\', \'composer-setup.php\');" && sudo {{bin/php}} composer-setup.php --install-dir={{composer_install_directory}} && {{bin/php}} -r "unlink(\'composer-setup.php\');"');
 })->verbose();
 
 
@@ -27,8 +28,8 @@ task('provision:composer:install', function () {
  */
 desc('Lists installed Composer packages');
 task('provision:composer:list', function () {
-	$output = run('cd {{release_or_current_path}} && {{bin/composer}} show');
-	writeOutput($output);
+    $output = run('cd {{release_or_current_path}} && {{bin/composer}} show');
+    writeOutput($output);
 });
 
 
@@ -37,8 +38,8 @@ task('provision:composer:list', function () {
  */
 desc('Lists globally installed Composer packages');
 task('provision:composer:list_global', function () {
-	$output = run('{{bin/composer}} global show');
-	writeOutput($output);
+    $output = run('{{bin/composer}} global show');
+    writeOutput($output);
 });
 
 
@@ -47,8 +48,8 @@ task('provision:composer:list_global', function () {
  */
 desc('Gets the Composer version');
 task('provision:composer:version', function () {
-	$output = run("{{bin/composer}} --version");
-	writeOutput($output);
+    $output = run("{{bin/composer}} --version");
+    writeOutput($output);
 });
 
 
@@ -57,6 +58,6 @@ task('provision:composer:version', function () {
  */
 desc('Outputs Composer diagnose');
 task('provision:composer:diagnose', function () {
-	$output = run("{{bin/composer}} diagnose");
-	writeOutput($output);
+    $output = run("{{bin/composer}} diagnose");
+    writeOutput($output);
 });

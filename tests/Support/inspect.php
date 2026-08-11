@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 /*
@@ -26,19 +27,19 @@ require 'recipe/common.php';
 
 $baseline = [];
 foreach ($deployer->tasks as $task) {
-	$baseline[] = $task->getName();
+    $baseline[] = $task->getName();
 }
 
 foreach (array_slice($argv, 1) as $recipe) {
-	Loader::load($recipe);
+    Loader::load($recipe);
 }
 
 $tasks = [];
 foreach ($deployer->tasks as $task) {
-	$tasks[$task->getName()] = $task->getSourceLocation();
+    $tasks[$task->getName()] = $task->getSourceLocation();
 }
 
 echo json_encode([
-	'baseline' => $baseline,
-	'tasks'    => $tasks,
+    'baseline' => $baseline,
+    'tasks'    => $tasks,
 ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);

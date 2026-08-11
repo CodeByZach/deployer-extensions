@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 /**
@@ -20,10 +21,10 @@ set('npm_options', '');
  * so a normal nvm install is caught by the nvm.sh test above.
  */
 set('bin/nvm', function () {
-	if (test('[ -s "$HOME/.nvm/nvm.sh" ]')) {
-		return 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm';
-	}
-	return commandExist('nvm') ? which('nvm') : '';
+    if (test('[ -s "$HOME/.nvm/nvm.sh" ]')) {
+        return 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm';
+    }
+    return commandExist('nvm') ? which('nvm') : '';
 });
 
 
@@ -32,10 +33,10 @@ set('bin/nvm', function () {
  * Uses NVM if available, otherwise falls back to system npm.
  */
 set('bin/npm', function () {
-	if (get('bin/nvm')) {
-		return '{{bin/nvm}} use && npm';
-	}
-	return which('npm');
+    if (get('bin/nvm')) {
+        return '{{bin/nvm}} use && npm';
+    }
+    return which('npm');
 });
 
 
@@ -44,10 +45,10 @@ set('bin/npm', function () {
  * Uses NVM if available, otherwise falls back to system node.
  */
 set('bin/node', function () {
-	if (get('bin/nvm')) {
-		return '{{bin/nvm}} use && node';
-	}
-	return which('node');
+    if (get('bin/nvm')) {
+        return '{{bin/nvm}} use && node';
+    }
+    return which('node');
 });
 
 
@@ -56,7 +57,7 @@ set('bin/node', function () {
  */
 desc('Installs npm packages');
 task('deploy:npm:install', function () {
-	run("cd {{release_or_current_path}} && {{bin/npm}} ci {{npm_options}}");
+    run("cd {{release_or_current_path}} && {{bin/npm}} ci {{npm_options}}");
 });
 
 
@@ -74,7 +75,7 @@ set('nvm_version', 'v0.40.6');
  */
 desc('Installs nvm');
 task('provision:nvm', function () {
-	run("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{nvm_version}}/install.sh | bash");
+    run("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{nvm_version}}/install.sh | bash");
 })->verbose()->limit(1);
 
 
@@ -83,8 +84,8 @@ task('provision:nvm', function () {
  */
 desc('Lists installed npm packages');
 task('provision:npm:list', function () {
-	$output = run("cd {{release_or_current_path}} && {{bin/npm}} list");
-	writeOutput($output);
+    $output = run("cd {{release_or_current_path}} && {{bin/npm}} list");
+    writeOutput($output);
 });
 
 
@@ -93,8 +94,8 @@ task('provision:npm:list', function () {
  */
 desc('Lists globally installed npm packages');
 task('provision:npm:list_global', function () {
-	$output = run("cd {{release_or_current_path}} && {{bin/npm}} list -g");
-	writeOutput($output);
+    $output = run("cd {{release_or_current_path}} && {{bin/npm}} list -g");
+    writeOutput($output);
 });
 
 
@@ -103,12 +104,12 @@ task('provision:npm:list_global', function () {
  */
 desc('Lists nvm installed node versions');
 task('provision:nvm:list', function () {
-	if (!get('bin/nvm')) {
-		throw error('nvm is not installed. Run `dep provision:nvm` first.');
-	}
+    if (!get('bin/nvm')) {
+        throw error('nvm is not installed. Run `dep provision:nvm` first.');
+    }
 
-	$output = run("{{bin/nvm}} list");
-	writeOutput($output);
+    $output = run("{{bin/nvm}} list");
+    writeOutput($output);
 });
 
 
@@ -117,8 +118,8 @@ task('provision:nvm:list', function () {
  */
 desc('Gets the node version');
 task('provision:node:version', function () {
-	$output = run("cd {{release_or_current_path}} && {{bin/node}} --version");
-	writeOutput($output);
+    $output = run("cd {{release_or_current_path}} && {{bin/node}} --version");
+    writeOutput($output);
 });
 
 
@@ -127,8 +128,8 @@ task('provision:node:version', function () {
  */
 desc('Gets the npm version');
 task('provision:npm:version', function () {
-	$output = run("cd {{release_or_current_path}} && {{bin/npm}} --version");
-	writeOutput($output);
+    $output = run("cd {{release_or_current_path}} && {{bin/npm}} --version");
+    writeOutput($output);
 });
 
 
@@ -137,10 +138,10 @@ task('provision:npm:version', function () {
  */
 desc('Gets the nvm version');
 task('provision:nvm:version', function () {
-	if (!get('bin/nvm')) {
-		throw error('nvm is not installed. Run `dep provision:nvm` first.');
-	}
+    if (!get('bin/nvm')) {
+        throw error('nvm is not installed. Run `dep provision:nvm` first.');
+    }
 
-	$output = run("{{bin/nvm}} --version");
-	writeOutput($output);
+    $output = run("{{bin/nvm}} --version");
+    writeOutput($output);
 });

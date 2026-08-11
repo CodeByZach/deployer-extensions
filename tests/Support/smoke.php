@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 /*
@@ -22,27 +23,27 @@ Loader::load('provision/node');
 
 // The provision tasks cd into release_or_current_path, so it has to exist.
 task('smoke:setup', function () {
-	run('mkdir -p {{deploy_path}}/current');
+    run('mkdir -p {{deploy_path}}/current');
 })->hidden();
 
 // Command output containing `{{` must print rather than throw ConfigurationException.
 // The `\{{` escape puts the braces in the output without putting them in the command.
 task('smoke:braces', function () {
-	writeOutput(run('echo "output with \{{not_a_config_key}} in it"'));
+    writeOutput(run('echo "output with \{{not_a_config_key}} in it"'));
 })->hidden();
 
 desc('Runs every read-only task against localhost');
 task('smoke', [
-	'smoke:setup',
-	'smoke:braces',
-	'provision:php:version',
-	'provision:php:list',
-	'provision:php:list_versions',
-	'provision:composer:version',
-	'provision:node:version',
-	'provision:npm:version',
+    'smoke:setup',
+    'smoke:braces',
+    'provision:php:version',
+    'provision:php:list',
+    'provision:php:list_versions',
+    'provision:composer:version',
+    'provision:node:version',
+    'provision:npm:version',
 ]);
 
 localhost('local')
-	->set('deploy_path', sys_get_temp_dir() . '/deployer-extensions-smoke')
-	->set('labels', ['env' => 'local']);
+    ->set('deploy_path', sys_get_temp_dir() . '/deployer-extensions-smoke')
+    ->set('labels', ['env' => 'local']);

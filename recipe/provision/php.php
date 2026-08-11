@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 /**
@@ -6,8 +7,8 @@ namespace Deployer;
  */
 desc('Lists active PHP extensions');
 task('provision:php:list', function () {
-	$output = run('{{bin/php}} -m');
-	writeOutput($output);
+    $output = run('{{bin/php}} -m');
+    writeOutput($output);
 });
 
 
@@ -16,7 +17,7 @@ task('provision:php:list', function () {
  */
 desc('Lists active PHP extensions with versions');
 task('provision:php:list_versions', function () {
-	$php_code = <<<PHP
+    $php_code = <<<PHP
 \$extensions = get_loaded_extensions();
 sort(\$extensions);
 foreach (\$extensions as \$extension) {
@@ -27,9 +28,9 @@ foreach (\$extensions as \$extension) {
 }
 PHP;
 
-	// Execute PHP code on the server and capture the output.
-	$output = run('{{bin/php}} -r '.quote($php_code));
-	writeOutput($output);
+    // Execute PHP code on the server and capture the output.
+    $output = run('{{bin/php}} -r ' . quote($php_code));
+    writeOutput($output);
 });
 
 
@@ -38,6 +39,6 @@ PHP;
  */
 desc('Gets the PHP version');
 task('provision:php:version', function () {
-	$output = run("{{bin/php}} --version");
-	writeOutput($output);
+    $output = run("{{bin/php}} --version");
+    writeOutput($output);
 });

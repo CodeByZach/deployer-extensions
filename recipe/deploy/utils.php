@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 use Deployer\Exception\GracefulShutdownException;
@@ -13,5 +14,5 @@ use Deployer\Exception\GracefulShutdownException;
  */
 desc('Abort a deployment');
 task('deploy:abort', function () {
-	throw new GracefulShutdownException('Deployment aborted.');
+    throw new GracefulShutdownException('Deployment aborted.');
 })->once();

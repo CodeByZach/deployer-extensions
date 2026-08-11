@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 /**
@@ -33,7 +34,7 @@ set('apache_access_log_files', '/var/log/apache2/access.log');
  */
 desc('Shows apache PHP error logs');
 task('logs:apache:error', function () {
-	run('tail -f {{apache_error_log_files}}');
+    run('tail -f {{apache_error_log_files}}');
 })->verbose();
 
 
@@ -42,7 +43,7 @@ task('logs:apache:error', function () {
  */
 desc('Shows apache PHP access logs');
 task('logs:apache:access', function () {
-	run('tail -f {{apache_access_log_files}}');
+    run('tail -f {{apache_access_log_files}}');
 })->verbose();
 
 
@@ -52,17 +53,17 @@ task('logs:apache:access', function () {
  */
 desc('Sets the correct webroot permissions');
 task('provision:apache:permissions', function () {
-	// Change ownership recursively to root user and www-data group
-	run('sudo chown -R root:www-data {{apache_webroot_directory}}');
+    // Change ownership recursively to root user and www-data group
+    run('sudo chown -R root:www-data {{apache_webroot_directory}}');
 
-	// Set file permissions to 664 (rw-rw-r--) recursively
-	run('sudo find {{apache_webroot_directory}} -type f -exec chmod 664 {} \;');
+    // Set file permissions to 664 (rw-rw-r--) recursively
+    run('sudo find {{apache_webroot_directory}} -type f -exec chmod 664 {} \;');
 
-	// Set directory permissions to 775 (rwxrwxr-x) recursively
-	run('sudo find {{apache_webroot_directory}} -type d -exec chmod 775 {} \;');
+    // Set directory permissions to 775 (rwxrwxr-x) recursively
+    run('sudo find {{apache_webroot_directory}} -type d -exec chmod 775 {} \;');
 
-	// Set the setgid bit on directories to inherit group ownership
-	run('sudo find {{apache_webroot_directory}} -type d -exec chmod g+s {} \;');
+    // Set the setgid bit on directories to inherit group ownership
+    run('sudo find {{apache_webroot_directory}} -type d -exec chmod g+s {} \;');
 })->verbose();
 
 
@@ -71,8 +72,8 @@ task('provision:apache:permissions', function () {
  */
 desc('Starts apache');
 task('provision:apache:start', function () {
-	$output = run('sudo systemctl start apache2.service');
-	writePlain($output);
+    $output = run('sudo systemctl start apache2.service');
+    writePlain($output);
 });
 
 
@@ -81,8 +82,8 @@ task('provision:apache:start', function () {
  */
 desc('Stops apache');
 task('provision:apache:stop', function () {
-	$output = run('sudo systemctl stop apache2.service');
-	writePlain($output);
+    $output = run('sudo systemctl stop apache2.service');
+    writePlain($output);
 });
 
 
@@ -91,8 +92,8 @@ task('provision:apache:stop', function () {
  */
 desc('Restarts apache');
 task('provision:apache:restart', function () {
-	$output = run('sudo systemctl restart apache2.service');
-	writeOutput($output);
+    $output = run('sudo systemctl restart apache2.service');
+    writeOutput($output);
 });
 
 
@@ -101,8 +102,8 @@ task('provision:apache:restart', function () {
  */
 desc('Gets apache status');
 task('provision:apache:status', function () {
-	$output = run('sudo systemctl status apache2.service');
-	writeOutput($output);
+    $output = run('sudo systemctl status apache2.service');
+    writeOutput($output);
 });
 
 
@@ -111,8 +112,8 @@ task('provision:apache:status', function () {
  */
 desc('Lists active apache modules');
 task('provision:apache:list', function () {
-	$output = run('apache2ctl -M');
-	writeOutput($output);
+    $output = run('apache2ctl -M');
+    writeOutput($output);
 });
 
 
@@ -121,6 +122,6 @@ task('provision:apache:list', function () {
  */
 desc('Gets the apache version');
 task('provision:apache:version', function () {
-	$output = run("apache2ctl -v");
-	writeOutput($output);
+    $output = run("apache2ctl -v");
+    writeOutput($output);
 });
