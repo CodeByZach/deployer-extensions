@@ -4,8 +4,8 @@ Custom deployment recipes and provisioning tasks for [Deployer](https://deployer
 
 ## Requirements
 
-- PHP ^8.2
-- deployer/deployer ^7.5.12 or ^8.0
+- PHP ^8.4
+- deployer/deployer ^8.0
 
 ## Installation
 
@@ -38,6 +38,13 @@ namespace Deployer;
 
 require 'vendor/autoload.php';
 
+// Required. These recipes build on Deployer's own configuration -- {{bin/php}},
+// {{bin/composer}} and {{release_or_current_path}} are defined there. Without it you
+// get: Config option "bin/php" does not exist.
+// A framework recipe (recipe/laravel.php, recipe/symfony.php, ...) also works, since
+// each of those requires common.php itself.
+require 'recipe/common.php';
+
 use CodeByZach\DeployerExtensions\Loader;
 
 // Load the default deployment recipe
@@ -48,6 +55,9 @@ Loader::load('deploy/env');
 Loader::load('provision/node');
 ```
 
+The output helpers (`writeOutput()`, `writeSuccess()`, ...) are autoloaded, so any
+recipe can be loaded on its own without pulling in the others.
+
 ## Available Recipes
 
 ### Deployment (`recipe/deploy/`)
@@ -57,7 +67,7 @@ Loader::load('provision/node');
 | `default` | Main deployment workflow with pre-flight checks |
 | `deploy/env` | Environment configuration management |
 | `deploy/release` | Release and commit tracking |
-| `deploy/utils` | Helper functions (messages, formatting) |
+| `deploy/utils` | The `deploy:abort` task |
 
 ### Provisioning (`recipe/provision/`)
 
@@ -65,9 +75,30 @@ Loader::load('provision/node');
 |--------|-------------|
 | `provision/apache` | Apache web server management |
 | `provision/autossh` | SSH tunnel management via autossh |
-| `provision/composer` | Composer installation and package management |
+| `provision/composer` | Composer installation (`provision:composer:install`) and package management |
 | `provision/node` | Node.js/npm with NVM support |
 | `provision/php` | PHP environment inspection |
+
+## Notes
+
+Two places where these recipes deliberately sit alongside Deployer's own. Both are
+intentional, not oversights:
+
+- **`provision:composer:install`** is *not* named `provision:composer`. Deployer has
+  defined a task by that name since v7.0.0, reachable from every project via
+  `common.php`, and `task()` replaces an existing definition in place -- so sharing the
+  name meant whichever file loaded last silently won. Ours installs via the official
+  installer with `sudo` and honours `{{composer_install_directory}}`; Deployer's pipes
+  `curl` to `php` and hardcodes `/usr/local/bin`. Both are now reachable.
+
+- **`bin/npm`** is deliberately overridden by `provision/node` with an NVM-aware
+  version. If you also import Deployer's `contrib/npm.php`, load this recipe *after*
+  it, or the plain `which('npm')` lookup wins.
+
+- **`releases:list`** overlaps Deployer's built-in `releases`. It is kept because
+  Deployer reads each release's `REVISION` file, which disappears when `keep_releases`
+  prunes the directory; `.dep/release_commits_log` outlives pruning, so this task can
+  still show a commit where the built-in reports `unknown`.
 
 ## Development
 
@@ -78,8 +109,14 @@ composer install
 # Run tests
 composer test
 
-# Run static analysis
+# Run static analysis (PHPStan level 8)
 composer phpstan
+
+# Check code style
+composer check
+
+# Fix code style
+composer fix
 ```
 
 ## License

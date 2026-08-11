@@ -1,8 +1,13 @@
 parameters:
-    level: 5
+    # Level 8 is the practical ceiling here, but it checks less than the number suggests:
+    # Deployer's get() returns mixed, and mixed is only inspected from level 9, which
+    # reports 54 errors that all want casts. The CI smoke test covers what this cannot.
+    level: 8
+    # Analyse against the declared floor (^8.4) through current stable, so CI catches
+    # issues on both matrix legs rather than only the version PHPStan happens to run on.
+    phpVersion:
+        min: 80400
+        max: 80599
     paths:
         - src/
         - recipe/
-    scanDirectories:
-        - vendor/deployer/deployer/src/
-    reportUnmatchedIgnoredErrors: false

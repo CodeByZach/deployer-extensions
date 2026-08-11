@@ -3,7 +3,6 @@ namespace Deployer;
 
 use Deployer\Exception\ConfigurationException;
 
-
 /**
  * Local root directory of the project, detected via git.
  */

@@ -1,9 +1,6 @@
 <?php
 namespace Deployer;
 
-use function Deployer\Support\escape_shell_argument;
-
-
 /**
  * List all loaded PHP extensions.
  */
@@ -31,7 +28,7 @@ foreach (\$extensions as \$extension) {
 PHP;
 
 	// Execute PHP code on the server and capture the output.
-	$output = run('{{bin/php}} -r '.escape_shell_argument($php_code));
+	$output = run('{{bin/php}} -r '.quote($php_code));
 	writeOutput($output);
 });
 

@@ -1,7 +1,6 @@
 <?php
 namespace Deployer;
 
-
 /**
  * Directory where Composer will be installed globally.
  * ```php
@@ -13,9 +12,12 @@ set('composer_install_directory', '/usr/local/bin');
 
 /**
  * Install Composer globally on the server.
+ *
+ * Not named `provision:composer`: Deployer has owned that name since v7.0.0, and
+ * task() replaces in place, so sharing it meant one of the two silently won.
  */
-desc('Installs Composer');
-task('provision:composer', function () {
+desc('Installs Composer via the official installer');
+task('provision:composer:install', function () {
 	run('{{bin/php}} -r "copy(\'https://getcomposer.org/installer\', \'composer-setup.php\');" && sudo {{bin/php}} composer-setup.php --install-dir={{composer_install_directory}} && {{bin/php}} -r "unlink(\'composer-setup.php\');"');
 })->verbose();
 

@@ -3,9 +3,6 @@ namespace Deployer;
 
 use Symfony\Component\Console\Helper\Table;
 
-use function Deployer\Support\escape_shell_argument;
-
-
 // Get releases from the `.dep/release_commits_log` log file.
 set('release_commits_log', function () {
 	cd('{{deploy_path}}');
@@ -35,8 +32,9 @@ task('deploy:release:commit', function () {
 		'commit'       => $rev
 	];
 
-	// Save metainfo about release.
-	$json = escape_shell_argument(json_encode($metainfo));
+	// Save metainfo about release. JSON_THROW_ON_ERROR keeps json_encode() from
+	// silently returning false and writing an empty record.
+	$json = quote(json_encode($metainfo, JSON_THROW_ON_ERROR));
 	run("echo {$json} >> {{deploy_path}}/.dep/release_commits_log");
 });
 
@@ -46,20 +44,18 @@ desc('Remove release information from the record');
 task('deploy:release:remove', function () {
 	$release_name = get('release_name');
 
-	// Define temporary paths for the log files.
-	$releases_log_path        = '{{deploy_path}}/.dep/releases_log';
-	$release_commits_log_path = '{{deploy_path}}/.dep/release_commits_log';
+	// grep -F, not sed: release_name would otherwise be a regex, so a dotted name
+	// matches too much and `-o release_name='.*'` empties both logs.
+	$needle = quote('"release_name":"' . $release_name . '"');
 
-	// Remove records of the failed release from the log file copies.
-	run("sed '/\"release_name\":\"{$release_name}\"/d' {$releases_log_path} > {$releases_log_path}.tmp");
-
-	// Overwrite the original log files with the cleaned copies.
-	run("mv {$releases_log_path}.tmp {$releases_log_path}");
-
-	// Remove and overwrite for the "release_commits_log".
-	if (test("[ -f {$release_commits_log_path} ]")) {
-		run("sed '/\"release_name\":\"{$release_name}\"/d' {$release_commits_log_path} > {$release_commits_log_path}.tmp");
-		run("mv {$release_commits_log_path}.tmp {$release_commits_log_path}");
+	// Both logs are optional -- a deploy can fail before releases_log is written, and
+	// erroring here would mask the original failure. `|| true` because grep exits 1
+	// when it keeps no lines.
+	foreach (['{{deploy_path}}/.dep/releases_log', '{{deploy_path}}/.dep/release_commits_log'] as $log_path) {
+		if (test("[ -f {$log_path} ]")) {
+			run("grep -vF {$needle} {$log_path} > {$log_path}.tmp || true");
+			run("mv {$log_path}.tmp {$log_path}");
+		}
 	}
 });
 
@@ -76,6 +72,10 @@ task('deploy:release:remove', function () {
  * | 2021-11-06 23:24:30 | 4 (current) | Anton Medvedev | HEAD   | s3wa45ca6 |
  * +---------------------+-------------+----------------+--------+-----------+
  * ```
+ *
+ * Deployer's built-in `releases` task reads each release's REVISION file, so it can
+ * only show a commit while the release directory still exists. This task reads
+ * `.dep/release_commits_log` instead, which outlives `keep_releases` pruning.
  */
 desc('Shows releases list with commits from release_commits_log');
 task('releases:list', function () {
@@ -86,16 +86,23 @@ task('releases:list', function () {
 	$release_commits_log = get('release_commits_log');
 	$current_release     = basename(run('readlink {{current_path}}'));
 	$releases_list       = get('releases_list');
-	$tz                  = !empty(getenv('TIMEZONE')) ? getenv('TIMEZONE') : date_default_timezone_get();
+	$tz                  = getenv('TIMEZONE') ?: date_default_timezone_get();
 
-	foreach ($releases_log as &$metainfo) {
+	foreach ($releases_log as $metainfo) {
+		// A malformed created_at must not take the whole listing down; fall back to
+		// showing the raw value.
 		$date = \DateTime::createFromFormat(\DateTimeInterface::ISO8601, $metainfo['created_at']);
-		$date->setTimezone(new \DateTimeZone($tz));
+		if ($date === false) {
+			$created_at = (string) $metainfo['created_at'];
+		} else {
+			$date->setTimezone(new \DateTimeZone($tz));
+			$created_at = $date->format('Y-m-d H:i:s');
+		}
 		$status = $release = $metainfo['release_name'];
 		if (in_array($release, $releases_list, true)) {
 			if (test("[ -f releases/{$release}/BAD_RELEASE ]")) {
 				$status = "<error>{$release}</error> (bad)";
-			} else if (test("[ -f releases/{$release}/DIRTY_RELEASE ]")) {
+			} elseif (test("[ -f releases/{$release}/DIRTY_RELEASE ]")) {
 				$status = "<error>{$release}</error> (dirty)";
 			} else {
 				$status = "<info>{$release}</info>";
@@ -112,7 +119,7 @@ task('releases:list', function () {
 			}
 		}
 		$table[] = [
-			$date->format('Y-m-d H:i:s'),
+			$created_at,
 			$status,
 			$metainfo['user'],
 			$metainfo['target'],

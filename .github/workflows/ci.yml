@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.4', '8.5']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      # Because every leg runs `composer update`, the committed lock file is otherwise
+      # never exercised; this is what catches it drifting from composer.json.
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      # `update`, not `install`: the lock file is resolved on one PHP version, so
+      # installing it everywhere would test the same dependency set twice rather than
+      # proving the declared constraints hold across the supported range.
+      - name: Install dependencies
+        run: composer update --no-interaction --no-progress --prefer-dist
+
+      - name: Static analysis
+        run: composer phpstan
+
+      - name: Code style
+        run: composer check
+
+      - name: Tests
+        run: composer test
+
+      # Executes real tasks against localhost. Every runtime bug this package has had
+      # was invisible to the three steps above and caught only by actually running one.
+      - name: Smoke test
+        run: composer smoke

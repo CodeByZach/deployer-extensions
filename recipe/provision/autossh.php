@@ -3,7 +3,6 @@ namespace Deployer;
 
 use Deployer\Exception\Exception;
 
-
 /**
  * Directory to store autossh socket files.
  * ```php
@@ -33,8 +32,11 @@ set('autossh_log_file', '~/autossh.log');
 
 /**
  * Generate a unique ID for a given SSH tunnel based on connection parameters.
+ *
+ * Ports are int|string because they come straight from the user's `autossh` config,
+ * which may quote them or not.
  */
-function autosshTunnelId(string $host, string $username, $port, $local_port): string {
+function autosshTunnelId(string $host, string $username, int|string $port, int|string $local_port): string {
 	$hash = md5($host . $username . $port . $local_port);
 	return substr($hash, 0, 10);
 }
@@ -51,7 +53,7 @@ function autosshSocketFile(string $socket_directory, string $tunnel_id): string 
 /**
  * Check if a local port is available for binding.
  */
-function autosshIsPortAvailable(string $host, $port): bool {
+function autosshIsPortAvailable(string $host, int|string $port): bool {
 	return test("\$({{bin/php}} -r \"\\\$socket = @stream_socket_server('tcp://{$host}:{$port}', \\\$errno, \\\$errstr); echo (\\\$socket ? 'true' : 'false');\")");
 }
 
@@ -67,7 +69,7 @@ function autosshIsTunnelOpen(string $socket_file): bool {
 /**
  * Open an SSH tunnel using autossh.
  */
-function autosshOpenTunnel(string $local_host, string $log_file, string $username, string $host, $port, string $key_file, $local_port, $remote_port, string $socket_file): bool {
+function autosshOpenTunnel(string $local_host, string $log_file, string $username, string $host, int|string $port, string $key_file, int|string $local_port, int|string $remote_port, string $socket_file): bool {
 	run("AUTOSSH_LOGFILE={$log_file} autossh -f -N -L {$local_port}:{$local_host}:{$remote_port} -o \"ControlPath={$socket_file}\" -p {$port} -i {$key_file} {$username}@{$host}");
 	return autosshIsTunnelOpen($socket_file);
 }
@@ -83,6 +85,12 @@ function autosshCloseTunnel(string $socket_file): bool {
 
 /**
  * Extract tunnel parameters from config array and global settings.
+ *
+ * Values stay `mixed` because they originate from user config and Deployer's get(),
+ * neither of which is typed.
+ *
+ * @param  array<string, mixed> $tunnel_config
+ * @return array<string, mixed>
  */
 function autosshGetTunnelParams(array $tunnel_config): array {
 	return [
@@ -107,7 +115,8 @@ task('provision:autossh', function () {
 	// Ensure autossh is installed.
 	$installed = commandExist('autossh');
 	if (!$installed && askConfirmation('Autossh is not installed. Would you like to install it?')) {
-		run('apt-get update && apt-get install -y autossh');
+		// DEBIAN_FRONTEND stops apt hanging on an interactive prompt.
+		run('apt-get update && apt-get install -y autossh', env: ['DEBIAN_FRONTEND' => 'noninteractive']);
 
 		// Check if the installation was successful.
 		if (!commandExist('autossh')) {

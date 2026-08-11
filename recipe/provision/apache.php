@@ -1,7 +1,6 @@
 <?php
 namespace Deployer;
 
-
 /**
  * Apache webroot directory.
  * ```php

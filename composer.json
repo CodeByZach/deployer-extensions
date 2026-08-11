@@ -13,7 +13,10 @@
     "autoload": {
         "psr-4": {
             "CodeByZach\\DeployerExtensions\\": "src/"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -22,27 +25,28 @@
     },
     "scripts": {
         "test": "pest",
-        "phpstan": "phpstan analyse --configuration=phpstan.neon --memory-limit=1G"
+        "phpstan": "phpstan analyse --configuration=phpstan.neon --memory-limit=1G",
+        "check": "php-cs-fixer check",
+        "fix": "php-cs-fixer fix",
+        "smoke": "dep -f tests/Support/smoke.php smoke local"
     },
     "require": {
-        "php": "^8.2",
-        "deployer/deployer": "^7.5.12|^8.0@RC"
+        "php": "^8.4",
+        "ext-json": "*",
+        "deployer/deployer": "^8.0"
     },
     "require-dev": {
-        "pestphp/pest": "^4.4",
-        "phpstan/phpstan": "^2.1.42"
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "pestphp/pest": "^5.1",
+        "phpstan/phpstan": "^2.2",
+        "symfony/console": "^7.4.0 || ^8.0.0",
+        "symfony/process": "^7.4.0 || ^8.0.0"
     },
     "config": {
         "optimize-autoloader": true,
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
-        },
-        "preferred-install": {
-            "deployer/deployer": "source",
-            "*": "dist"
         }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    }
 }

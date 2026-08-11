@@ -1,7 +1,6 @@
 <?php
 namespace Deployer;
 
-
 /**
  * Extra options for npm install command.
  * ```php
@@ -13,13 +12,18 @@ set('npm_options', '');
 
 /**
  * Path to NVM binary, automatically detected.
- * Checks for NVM installation in `$HOME/.nvm/nvm.sh`.
+ * Checks for NVM installation in `$HOME/.nvm/nvm.sh`, then for an `nvm` on PATH.
+ *
+ * Returns '' when nvm is absent so `bin/npm` and `bin/node` can fall back. nvm is
+ * optional, so it is probed with commandExist(); which() throws and would make those
+ * fallbacks unreachable. commandExist() only finds executables, not shell functions,
+ * so a normal nvm install is caught by the nvm.sh test above.
  */
 set('bin/nvm', function () {
 	if (test('[ -s "$HOME/.nvm/nvm.sh" ]')) {
 		return 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm';
 	}
-	return which('nvm');
+	return commandExist('nvm') ? which('nvm') : '';
 });
 
 
@@ -57,11 +61,20 @@ task('deploy:npm:install', function () {
 
 
 /**
+ * Version of NVM to install, as a git tag from nvm-sh/nvm.
+ * ```php
+ * set('nvm_version', 'v0.40.6');
+ * ```
+ */
+set('nvm_version', 'v0.40.6');
+
+
+/**
  * Install NVM (Node Version Manager) on the server.
  */
 desc('Installs nvm');
 task('provision:nvm', function () {
-	run("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash");
+	run("curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{nvm_version}}/install.sh | bash");
 })->verbose()->limit(1);
 
 
@@ -90,6 +103,10 @@ task('provision:npm:list_global', function () {
  */
 desc('Lists nvm installed node versions');
 task('provision:nvm:list', function () {
+	if (!get('bin/nvm')) {
+		throw error('nvm is not installed. Run `dep provision:nvm` first.');
+	}
+
 	$output = run("{{bin/nvm}} list");
 	writeOutput($output);
 });
@@ -120,6 +137,10 @@ task('provision:npm:version', function () {
  */
 desc('Gets the nvm version');
 task('provision:nvm:version', function () {
+	if (!get('bin/nvm')) {
+		throw error('nvm is not installed. Run `dep provision:nvm` first.');
+	}
+
 	$output = run("{{bin/nvm}} --version");
 	writeOutput($output);
 });
