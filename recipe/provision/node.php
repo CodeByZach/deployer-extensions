@@ -29,26 +29,26 @@ set('bin/nvm', function () {
 
 
 /**
- * Path to npm binary, automatically detected.
- * Uses NVM if available, otherwise falls back to system npm.
+ * Path to Node.js binary, automatically detected.
+ * Resolves through nvm (`.nvmrc`, then the `default` alias) when available,
+ * otherwise falls back to system node.
  */
-set('bin/npm', function () {
+set('bin/node', function () {
     if (get('bin/nvm')) {
-        return '{{bin/nvm}} use && npm';
+        $path = run('cd {{release_or_current_path}} && ({{bin/nvm}} which 2>/dev/null || {{bin/nvm}} which default 2>/dev/null); true');
+        if ($path !== '') {
+            return $path;
+        }
     }
-    return which('npm');
+    return which('node');
 });
 
 
 /**
- * Path to Node.js binary, automatically detected.
- * Uses NVM if available, otherwise falls back to system node.
+ * Path to npm binary: the npm installed alongside `bin/node`.
  */
-set('bin/node', function () {
-    if (get('bin/nvm')) {
-        return '{{bin/nvm}} use && node';
-    }
-    return which('node');
+set('bin/npm', function () {
+    return dirname(get('bin/node')) . '/npm';
 });
 
 
