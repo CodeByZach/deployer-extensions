@@ -20,6 +20,22 @@ add('recipes', ['default']);
 set('symlink_published', false);
 
 
+/**
+ * Whether this deployment reached the lock step, and whether a lock already existed.
+ * Used to determine if a failed deployment should unlock.
+ */
+set('lock_attempted', false);
+set('lock_existed', false);
+
+
+/**
+ * Whether this deployment reached the release step, and whether its release already existed.
+ * Used to determine if a failed deployment should remove the release.
+ */
+set('release_attempted', false);
+set('release_existed', false);
+
+
 
 
 /**
@@ -51,6 +67,25 @@ task('deploy:mark_symlink_published', function () {
     set('symlink_published', true);
 })->hidden();
 
+task('deploy:note_lock', function () {
+    set('lock_existed', test('[ -f {{deploy_path}}/.dep/deploy.lock ]'));
+    set('lock_attempted', true);
+})->hidden();
+
+
+task('deploy:note_release', function () {
+    set('release_existed', test('[ -d {{deploy_path}}/releases/{{release_name}} ]'));
+    set('release_attempted', true);
+})->hidden();
+
+
+// Unlock a failed deployment, unless the lock was not its own.
+task('deploy:failed:unlock', function () {
+    if (get('lock_attempted') && !get('lock_existed')) {
+        invoke('deploy:unlock');
+    }
+})->hidden();
+
 
 // Define a custom task to clean up a failed release if necessary.
 desc('Clean up a failed release if the deployment failed before or during symlink');
@@ -58,6 +93,12 @@ task('deploy:cleanup_failed_release', function () {
     // Nothing to clean up if the deploy failed before deploy:setup built the paths --
     // and reading release_name below would itself fail, masking the original error.
     if (!test('[ -d {{deploy_path}}/releases ]')) {
+        return;
+    }
+
+    // Nothing to clean up if this deployment created no release.
+    if (!get('release_attempted') || get('release_existed')) {
+        writeSuccess('This deployment created no release. No cleanup required.');
         return;
     }
 
@@ -107,7 +148,9 @@ before('deploy', 'deploy:precheck');
 after('deploy:update_code', 'deploy:env:upload');
 after('deploy:prepare', 'deploy:release:commit');
 after('deploy:symlink', 'deploy:mark_symlink_published');
+before('deploy:lock', 'deploy:note_lock');
+before('deploy:release', 'deploy:note_release');
 // Unlock first: a throw in cleanup aborts the remaining deploy:failed hooks, and a
 // stranded .dep/deploy.lock blocks the next deploy entirely.
-after('deploy:failed', 'deploy:unlock');
+after('deploy:failed', 'deploy:failed:unlock');
 after('deploy:failed', 'deploy:cleanup_failed_release');

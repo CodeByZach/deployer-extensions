@@ -21,9 +21,14 @@ Loader::load('provision/php');
 Loader::load('provision/composer');
 Loader::load('provision/node');
 
-// The provision tasks cd into release_or_current_path, so it has to exist.
+// The provision tasks cd into release_or_current_path, so it has to exist. The .nvmrc
+// makes bin/node resolve through nvm, which CI must have.
 task('smoke:setup', function () {
+    if (getenv('CI') && get('bin/nvm') === '') {
+        throw new \RuntimeException('nvm is not installed, so the .nvmrc case would test nothing.');
+    }
     run('mkdir -p {{deploy_path}}/current');
+    run('echo system > {{deploy_path}}/current/.nvmrc');
 })->hidden();
 
 // Command output containing `{{` must print rather than throw ConfigurationException.
