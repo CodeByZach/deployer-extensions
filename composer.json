@@ -1,15 +1,26 @@
 {
     "name": "codebyzach/deployer-extensions",
-    "description": "Custom Deployer recipes and tasks",
+    "description": "Custom recipes and tasks for Deployer 8",
     "type": "library",
     "license": "MIT",
     "homepage": "https://github.com/CodeByZach/deployer-extensions",
+    "keywords": [
+        "deployer",
+        "deployer-recipes",
+        "deployment",
+        "php"
+    ],
     "authors": [
         {
             "name": "Zachary Miller",
             "email": "codebyzach@gmail.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/CodeByZach/deployer-extensions/issues",
+        "source": "https://github.com/CodeByZach/deployer-extensions",
+        "security": "https://github.com/CodeByZach/deployer-extensions/security/policy"
+    },
     "autoload": {
         "psr-4": {
             "CodeByZach\\DeployerExtensions\\": "src/"
@@ -32,14 +43,13 @@
     },
     "require": {
         "php": "^8.4",
-        "ext-json": "*",
         "deployer/deployer": "^8.0",
         "symfony/console": "^7.4.0 || ^8.0.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95",
-        "pestphp/pest": "^5.1",
-        "phpstan/phpstan": "^2.2",
+        "pestphp/pest": "^5.3",
+        "phpstan/phpstan": "^2.3",
         "symfony/process": "^7.4.0 || ^8.0.0"
     },
     "config": {
