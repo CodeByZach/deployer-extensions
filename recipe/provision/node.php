@@ -64,10 +64,10 @@ task('deploy:npm:install', function () {
 /**
  * Version of NVM to install, as a git tag from nvm-sh/nvm.
  * ```php
- * set('nvm_version', 'v0.40.6');
+ * set('nvm_version', 'v0.41.0');
  * ```
  */
-set('nvm_version', 'v0.40.6');
+set('nvm_version', 'v0.41.0');
 
 
 /**

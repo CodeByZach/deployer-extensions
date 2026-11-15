@@ -8,20 +8,28 @@ on:
 permissions:
   contents: read
 
+# Actions are pinned by .github/workflows/actions.lock, which GitHub enforces when the
+# workflow runs. Rerun `gh actions-lock` after changing any `uses:`.
 jobs:
   test:
-    name: PHP ${{ matrix.php }}
-    runs-on: ubuntu-latest
-
+    name: PHP ${{ matrix.php }}${{ matrix.lowest && ', lowest dependencies' || '' }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
     strategy:
-      fail-fast: false
+      fail-fast: false # report every combination
       matrix:
         php: ['8.4', '8.5']
+        lowest: [false]
+        include:
+          - php: '8.4'
+            lowest: true
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false # this job never pushes
 
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+      - uses: shivammathur/setup-php@2.40.0
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -34,9 +42,10 @@ jobs:
 
       # `update`, not `install`: the lock file is resolved on one PHP version, so
       # installing it everywhere would test the same dependency set twice rather than
-      # proving the declared constraints hold across the supported range.
+      # proving the declared constraints hold across the supported range. The newest
+      # versions run on every PHP version, the oldest allowed ones on the lowest.
       - name: Install dependencies
-        run: composer update --no-interaction --no-progress --prefer-dist
+        run: composer update --no-interaction --no-progress --prefer-dist ${{ matrix.lowest && '--prefer-lowest --prefer-stable' || '' }}
 
       - name: Static analysis
         run: composer phpstan
@@ -51,3 +60,17 @@ jobs:
       # was invisible to the three steps above and caught only by actually running one.
       - name: Smoke test
         run: composer smoke
+
+  # The check branch rules require: passes only if every test job passed, so the
+  # required checks stay the same when the PHP versions change.
+  ci:
+    name: CI
+    needs: test
+    if: always()
+    runs-on: ubuntu-26.04
+    timeout-minutes: 1
+    steps:
+      - name: Check that every test job passed
+        env:
+          RESULT: ${{ needs.test.result }}
+        run: test "$RESULT" = success
