@@ -35,7 +35,7 @@ set('bin/nvm', function () {
  */
 set('bin/node', function () {
     if (get('bin/nvm')) {
-        $path = run('cd {{release_or_current_path}} && ({{bin/nvm}} which --silent 2>/dev/null || {{bin/nvm}} which default --silent 2>/dev/null); true');
+        $path = run('cd {{release_or_current_path}} && (({{bin/nvm}} which --silent) 2>/dev/null || ({{bin/nvm}} which default --silent) 2>/dev/null); true');
         if ($path !== '') {
             return $path;
         }
