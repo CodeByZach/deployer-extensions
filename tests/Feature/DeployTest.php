@@ -128,6 +128,31 @@ it("keeps another deploy's lock when failing before taking the lock", function (
         ->and(file_get_contents("{$this->target}/.dep/deploy.lock"))->toBe('another deploy');
 });
 
+it("deploys the environment's configuration file", function () {
+    deployOrFail($this->project, $this->target);
+
+    expect(file_get_contents("{$this->target}/current/.env"))->toBe("APP_NAME=local\n");
+});
+
+it('deploys a project that has no environment configuration file', function () {
+    // Committed, so the release has no .env.example for Deployer's own deploy:env to copy.
+    git($this->project, 'rm', '--quiet', '.env.example');
+    unlink("{$this->project}/.env.local");
+    git($this->project, 'commit', '--quiet', '--all', '--message=Remove the environment files');
+
+    deployOrFail($this->project, $this->target);
+
+    expect("{$this->target}/current/index.php")->toBeFile()
+        ->and("{$this->target}/current/.env")->not->toBeFile()
+        ->and("{$this->target}/current/env.php")->not->toBeFile();
+});
+
+it('refuses a project with both kinds of example file', function () {
+    file_put_contents("{$this->project}/env.php.example", "<?php\n");
+
+    expectFailure(deploy($this->project, $this->target), 'cannot exist simultaneously');
+});
+
 it('unlocks the hosts that locked when another host fails to lock', function () {
     $failed = deploy($this->project, $this->target, deployFile: 'deploy-two-hosts.php', hosts: 'all', env: ['DEPLOY_TEST_A_BREAK_LOCK' => '1']);
 
