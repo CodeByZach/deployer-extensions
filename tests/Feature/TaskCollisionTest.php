@@ -25,5 +25,5 @@ it('does not silently replace any of Deployer\'s own tasks', function () {
         ->and($tasks['provision:composer:install'])->toContain('recipe/provision/composer.php')
         // Reverting this to an anonymous after() closure would register it as
         // `after:deploy:symlink`, which a consumer could silently replace.
-        ->and($tasks)->toHaveKey('deploy:mark_symlink_published');
+        ->and($tasks)->toHaveKeys(['deploy:mark_symlink_published', 'deploy:note_lock', 'deploy:note_release', 'deploy:failed:unlock']);
 });

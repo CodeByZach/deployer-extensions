@@ -23,14 +23,10 @@ set('release_commits_log', function () {
 // Clean up unfinished releases and prepare next release.
 desc('Store commit hash with release_name for the current release');
 task('deploy:release:commit', function () {
-    $git    = get('bin/git');
-    $target = get('target');
-    $rev    = run("cd {{deploy_path}}/.dep/repo && ({$git} rev-list {$target} -1)");
-
     // Metainfo.
     $metainfo = [
         'release_name' => get('release_name'),
-        'commit'       => $rev,
+        'commit'       => get('release_revision'),
     ];
 
     // Save metainfo about release. JSON_THROW_ON_ERROR keeps json_encode() from

@@ -31,11 +31,11 @@ set('bin/nvm', function () {
 /**
  * Path to Node.js binary, automatically detected.
  * Resolves through nvm (`.nvmrc`, then the `default` alias) when available,
- * otherwise falls back to system node.
+ * otherwise falls back to system node. Reading `.nvmrc` requires nvm v0.36.0 or newer.
  */
 set('bin/node', function () {
     if (get('bin/nvm')) {
-        $path = run('cd {{release_or_current_path}} && ({{bin/nvm}} which 2>/dev/null || {{bin/nvm}} which default 2>/dev/null); true');
+        $path = run('cd {{release_or_current_path}} && ({{bin/nvm}} which --silent 2>/dev/null || {{bin/nvm}} which default --silent 2>/dev/null); true');
         if ($path !== '') {
             return $path;
         }
