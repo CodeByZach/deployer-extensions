@@ -33,6 +33,7 @@ set('env_status', function () {
 /**
  * Detected environment configuration type ('php' or 'dotenv').
  * Auto-detected based on presence of `env.php.example` or `.env.example` in project root.
+ * Null when neither is present: the project has no environment configuration file.
  */
 set('env_config_type', function () {
     $local_path        = get('local_path');
@@ -54,7 +55,7 @@ set('env_config_type', function () {
         return 'dotenv';
     }
 
-    throw new ConfigurationException("Could not detect env configuration type. Neither \"{$env_config_php}\" or \"{$env_config_dotenv}\" present.");
+    return null;
 });
 
 
@@ -62,11 +63,16 @@ set('env_config_type', function () {
  * Path to the environment-specific configuration file for deployment.
  * Resolved based on `env_status` and `env_config_type`.
  * Examples: `.env.production`, `env.staging.php`
+ * Null when the project has no environment configuration file.
  */
 set('env_config', function () {
     $local_path      = get('local_path');
     $env_status      = get('env_status');
     $env_config_type = get('env_config_type');
+
+    if ($env_config_type === null) {
+        return null;
+    }
 
     switch ($env_config_type) {
         case 'dotenv':
@@ -100,12 +106,17 @@ task('deploy:env:check', function () {
  * Upload environment configuration file to the server.
  * If the config file is in shared_files, uploads to the shared directory
  * so it persists across releases. Otherwise uploads to the release directory.
+ * Does nothing when the project has no environment configuration file.
  */
 desc('Upload environment-specific configuration file to deployment');
 task('deploy:env:upload', function () {
     $env_config_type   = get('env_config_type');
     $source_env_config = get('env_config');
     $shared_files      = get('shared_files');
+
+    if ($source_env_config === null) {
+        return;
+    }
 
     switch ($env_config_type) {
         case 'dotenv':
